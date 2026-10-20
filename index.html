@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f4">
+    <meta
+      name="description"
+      content="NEXUS SOCIAL — A ajuda certa. No momento certo."
+    >
+    <title>NEXUS SOCIAL | A ajuda certa. No momento certo.</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./script.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+    <div class="app-shell">
+      <aside class="sidebar" id="site-navigation" aria-label="Navegação principal">
+        <a class="brand" href="#view-dashboard" data-navigate="dashboard" aria-label="NEXUS SOCIAL, painel principal">
+          <span class="brand-mark" aria-hidden="true">N</span>
+          <span class="brand-name">NEXUS <span>SOCIAL</span></span>
+        </a>
+
+        <p class="sidebar-caption">ESPAÇO DE DEMONSTRAÇÃO</p>
+        <nav class="primary-nav" aria-label="Seções">
+          <button class="nav-link is-active" type="button" data-view="dashboard" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">⌂</span>
+            <span>Painel principal</span>
+          </button>
+          <button class="nav-link" type="button" data-view="requests">
+            <span class="nav-icon" aria-hidden="true">▤</span>
+            <span>Solicitações</span>
+          </button>
+          <button class="nav-link" type="button" data-view="new-request">
+            <span class="nav-icon" aria-hidden="true">＋</span>
+            <span>Cadastrar solicitação</span>
+          </button>
+          <button class="nav-link" type="button" data-view="details">
+            <span class="nav-icon" aria-hidden="true">▧</span>
+            <span>Detalhes da solicitação</span>
+          </button>
+          <button class="nav-link" type="button" data-view="history">
+            <span class="nav-icon" aria-hidden="true">◷</span>
+            <span>Histórico</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-note">
+          <span class="note-icon" aria-hidden="true">i</span>
+          <p>Perfis e histórico são locais. Não há coordenação confiável entre dispositivos ou usuários.</p>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button
+            class="menu-toggle"
+            type="button"
+            aria-label="Abrir navegação"
+            aria-controls="site-navigation"
+            aria-expanded="false"
+          >
+            <span aria-hidden="true">☰</span>
+          </button>
+          <div class="topbar-brand">
+            <span class="brand-mark brand-mark-small" aria-hidden="true">N</span>
+            <span>NEXUS SOCIAL</span>
+          </div>
+          <p class="topbar-tagline">A ajuda certa. No momento certo.</p>
+          <label class="profile-control" for="demo-profile">
+            Perfil
+            <select id="demo-profile" name="demo-profile">
+              <option value="requester">Solicitante</option>
+              <option value="volunteer">Voluntário</option>
+              <option value="moderator">Moderador</option>
+            </select>
+          </label>
+          <span class="demo-badge">Demonstração</span>
+        </header>
+
+        <main class="main-content" id="main-content" tabindex="-1">
+          <div class="notice notice-info" role="status">
+            <span class="notice-icon" aria-hidden="true">i</span>
+            <p>
+              Esta versão é uma demonstração local. Não possui backend, autenticação real
+              ou confirmação física de entregas.
+            </p>
+          </div>
+          <div class="notice notice-error" id="storage-message" role="alert" hidden></div>
+          <div class="notice notice-info" id="action-message" role="status" aria-live="polite" hidden></div>
+
+          <section class="view is-visible" id="view-dashboard" aria-labelledby="dashboard-title">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">VISÃO GERAL</p>
+                <h1 id="dashboard-title">Painel principal</h1>
+                <p class="page-description">Um espaço para acompanhar solicitações de forma organizada e transparente.</p>
+              </div>
+            </div>
+
+            <div class="welcome-card">
+              <div class="welcome-copy">
+                <span class="welcome-kicker">NEXUS SOCIAL</span>
+                <h2>A ajuda certa.<br> No momento certo.</h2>
+                <p>Organize solicitações fictícias e acompanhe suas atualizações em um só lugar.</p>
+                <button class="button button-primary" type="button" data-navigate="requests">
+                  Ver solicitações <span aria-hidden="true">→</span>
+                </button>
+              </div>
+              <div class="welcome-art" aria-hidden="true">
+                <span class="art-circle art-circle-one"></span>
+                <span class="art-circle art-circle-two"></span>
+                <span class="art-spark">✳</span>
+                <span class="art-heart">♡</span>
+              </div>
+            </div>
+
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">ACOMPANHAMENTO</p>
+                <h2>Resumo das solicitações</h2>
+              </div>
+            </div>
+            <div class="stats-grid" id="dashboard-stats" aria-live="polite"></div>
+            <p class="dashboard-count-note">Os indicadores mostram a quantidade de solicitações em cada status atual; não representam o total histórico de eventos. Conclusões declaradas e recebimentos confirmados são contados separadamente.</p>
+            <section class="dashboard-recent" aria-labelledby="recent-requests-title">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">ATUALIZAÇÕES</p>
+                  <h2 id="recent-requests-title">Solicitações recentes</h2>
+                </div>
+                <div class="dashboard-shortcuts">
+                  <button class="button button-secondary" type="button" data-navigate="new-request">Cadastrar solicitação</button>
+                  <button class="button button-secondary" type="button" data-navigate="requests">Consultar solicitações</button>
+                </div>
+              </div>
+              <div class="empty-state compact-empty" id="dashboard-empty">
+                <span class="empty-icon" aria-hidden="true">▤</span>
+                <h3>Nenhuma solicitação cadastrada</h3>
+                <p>As solicitações registradas nesta demonstração aparecerão aqui.</p>
+                <button class="button button-primary" type="button" data-navigate="new-request">Cadastrar solicitação</button>
+              </div>
+              <div class="request-list dashboard-recent-list" id="dashboard-recent-list" aria-live="polite"></div>
+            </section>
+          </section>
+
+          <section class="view" id="view-requests" aria-labelledby="requests-title" hidden>
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">ACOMPANHAMENTO</p>
+                <h1 id="requests-title">Solicitações</h1>
+                <p class="page-description">Consulte e acompanhe os pedidos cadastrados nesta demonstração.</p>
+              </div>
+              <button class="button button-primary" type="button" data-navigate="new-request">
+                <span aria-hidden="true">＋</span> Cadastrar solicitação
+              </button>
+            </div>
+            <div class="filter-panel" aria-label="Pesquisa e filtros de solicitações">
+              <div class="form-field filter-search">
+                <label for="request-search">Pesquisar</label>
+                <input id="request-search" type="search" placeholder="Título, descrição ou categoria" autocomplete="off">
+              </div>
+              <div class="form-field">
+                <label for="filter-category">Categoria</label>
+                <select id="filter-category">
+                  <option value="">Todas as categorias</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="filter-status">Status</label>
+                <select id="filter-status">
+                  <option value="">Todos os status</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="filter-urgency">Urgência declarada</label>
+                <select id="filter-urgency">
+                  <option value="">Todas as urgências</option>
+                </select>
+              </div>
+              <button class="button button-secondary filter-clear" id="clear-request-filters" type="button">Limpar filtros</button>
+            </div>
+            <p class="priority-note">Solicitações abertas são ordenadas primeiro pela urgência declarada (alta, média, baixa) e depois pela data mais antiga. A urgência é informada pelo solicitante, não tem comprovação independente e não determina quem merece receber ajuda.</p>
+            <p class="visually-hidden" id="request-results-announcement" aria-live="polite"></p>
+            <div class="empty-state" id="requests-empty">
+              <span class="empty-icon" aria-hidden="true">▤</span>
+              <h2>Nenhuma solicitação cadastrada</h2>
+              <p>Quando existirem solicitações, elas aparecerão nesta área.</p>
+              <button class="button button-secondary" type="button" data-navigate="new-request">
+                Ir para cadastro
+              </button>
+            </div>
+            <div class="empty-state" id="requests-no-results" hidden>
+              <span class="empty-icon" aria-hidden="true">⌕</span>
+              <h2>Nenhuma solicitação encontrada</h2>
+              <p>Tente alterar a pesquisa ou limpar os filtros.</p>
+            </div>
+            <div class="request-list" id="request-list" aria-live="polite"></div>
+          </section>
+
+          <section class="view" id="view-new-request" aria-labelledby="new-request-title" hidden>
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">REGISTRO</p>
+                <h1 id="new-request-title">Cadastrar solicitação</h1>
+                <p class="page-description">Registre um pedido fictício de alimentos ou itens básicos.</p>
+              </div>
+            </div>
+            <form class="form-card" id="request-form" novalidate>
+              <h2>Dados da solicitação</h2>
+              <p class="form-intro">Não inclua endereço exato, documentos pessoais ou telefone público. Todos os campos são obrigatórios.</p>
+              <div class="notice" id="form-message" role="status" aria-live="polite" hidden></div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="request-title">Título da solicitação</label>
+                  <input id="request-title" name="title" type="text" placeholder="Ex.: Itens para alimentação" minlength="4" maxlength="100" required aria-describedby="request-title-error">
+                  <span class="field-error" id="request-title-error"></span>
+                </div>
+                <div class="form-field">
+                  <label for="request-category">Categoria</label>
+                  <select id="request-category" name="category" required aria-describedby="request-category-error">
+                    <option value="">Selecione uma categoria</option>
+                  </select>
+                  <span class="field-error" id="request-category-error"></span>
+                </div>
+                <div class="form-field form-field-full">
+                  <label for="request-description">Descrição</label>
+                  <textarea id="request-description" name="description" rows="4" placeholder="Descreva os itens necessários, sem dados pessoais" minlength="10" maxlength="1000" required aria-describedby="request-description-error"></textarea>
+                  <span class="field-error" id="request-description-error"></span>
+                </div>
+                <div class="form-field">
+                  <label for="request-quantity">Quantidade</label>
+                  <input id="request-quantity" name="quantity" type="number" min="0.01" max="1000000" step="any" inputmode="decimal" placeholder="Ex.: 2" required aria-describedby="request-quantity-error">
+                  <span class="field-error" id="request-quantity-error"></span>
+                </div>
+                <div class="form-field">
+                  <label for="request-unit">Unidade de medida</label>
+                  <select id="request-unit" name="unit" required aria-describedby="request-unit-error">
+                    <option value="">Selecione uma unidade</option>
+                  </select>
+                  <span class="field-error" id="request-unit-error"></span>
+                </div>
+                <div class="form-field">
+                  <label for="request-region">Região aproximada</label>
+                  <input id="request-region" name="region" type="text" placeholder="Ex.: bairro ou município" minlength="2" maxlength="80" required aria-describedby="request-region-hint request-region-error">
+                  <span class="field-hint" id="request-region-hint">Informe apenas bairro, município ou região — nunca o endereço exato.</span>
+                  <span class="field-error" id="request-region-error"></span>
+                </div>
+                <div class="form-field">
+                  <label for="request-urgency">Urgência declarada</label>
+                  <select id="request-urgency" name="declaredUrgency" required aria-describedby="request-urgency-error">
+                    <option value="">Selecione a urgência</option>
+                  </select>
+                  <span class="field-error" id="request-urgency-error"></span>
+                </div>
+                <div class="form-field form-field-full form-actions">
+                  <button class="button button-primary" id="request-submit" type="submit">Salvar solicitação</button>
+                </div>
+              </div>
+            </form>
+          </section>
+
+          <section class="view" id="view-details" aria-labelledby="details-title" hidden>
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">ACOMPANHAMENTO</p>
+                <h1 id="details-title">Detalhes da solicitação</h1>
+                <p class="page-description">Informações e atualizações de uma solicitação selecionada.</p>
+              </div>
+            </div>
+            <div class="empty-state" id="details-empty">
+              <span class="empty-icon" aria-hidden="true">▧</span>
+              <h2>Nenhuma solicitação selecionada</h2>
+              <p>Os detalhes serão exibidos quando houver uma solicitação disponível.</p>
+              <button class="button button-secondary" type="button" data-navigate="requests">
+                Ver solicitações
+              </button>
+            </div>
+            <div id="selected-request-details"></div>
+          </section>
+
+          <section class="view" id="view-history" aria-labelledby="history-title" hidden>
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">TRANSPARÊNCIA</p>
+                <h1 id="history-title">Histórico</h1>
+                <p class="page-description">Registro de alterações relacionadas às solicitações.</p>
+              </div>
+            </div>
+            <p class="history-disclaimer">Histórico local da demonstração. Pode ser alterado pelo usuário e não constitui auditoria inviolável.</p>
+            <div class="empty-state" id="history-empty">
+              <span class="empty-icon" aria-hidden="true">◷</span>
+              <h2>O histórico está vazio</h2>
+              <p>Os registros das solicitações cadastradas aparecerão nesta área.</p>
+            </div>
+            <ol class="history-list" id="history-list"></ol>
+          </section>
+        </main>
+
+        <footer class="site-footer">
+          <p>Projeto demonstrativo. Dados locais não são registros invioláveis nem confirmação de atendimento.</p>
+        </footer>
+      </div>
+    </div>
+
+    <div class="nav-backdrop" hidden></div>
+    <div class="visually-hidden" id="navigation-announcement" aria-live="polite"></div>
+    <dialog class="action-dialog" id="action-dialog" aria-labelledby="action-dialog-title">
+      <form id="action-dialog-form" novalidate>
+        <h2 id="action-dialog-title">Confirmar ação</h2>
+        <p id="action-dialog-description"></p>
+        <div class="form-field" id="action-reason-field" hidden>
+          <label for="action-reason">Justificativa</label>
+          <textarea id="action-reason" name="reason" minlength="3" maxlength="500" rows="3" aria-describedby="action-reason-error"></textarea>
+          <span class="field-error" id="action-reason-error"></span>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-secondary" type="button" id="action-dialog-cancel">Voltar</button>
+          <button class="button button-primary" type="submit" id="action-dialog-confirm">Confirmar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
