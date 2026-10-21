@@ -1,5 +1,3 @@
-import { compareNewestFirst } from "./queries.js";
-
 const STATUS_LABELS = Object.freeze({
   aberto: "Solicitações abertas",
   em_atendimento: "Atendimentos em andamento",
@@ -7,6 +5,15 @@ const STATUS_LABELS = Object.freeze({
   recebimento_confirmado: "Recebimentos confirmados",
   cancelado: "Solicitações canceladas",
   suspenso_para_revisao: "Suspensas para revisão",
+});
+
+const STATUS_ICONS = Object.freeze({
+  aberto: "circle-dot",
+  em_atendimento: "clock",
+  conclusao_declarada: "check-circle",
+  recebimento_confirmado: "shield-check",
+  cancelado: "x-circle",
+  suspenso_para_revisao: "pause-circle",
 });
 
 const STATUS_ORDER = Object.freeze(Object.keys(STATUS_LABELS));
@@ -30,13 +37,16 @@ export function renderDashboard(requests) {
   container.replaceChildren();
   for (const status of STATUS_ORDER) {
     const card = document.createElement("article");
-    card.className = "stat-card";
+    card.className = `stat-card stat-${status}`;
+    const iconWrap = document.createElement("span");
+    iconWrap.className = "stat-icon";
+    iconWrap.append(createIcon(STATUS_ICONS[status]));
     const heading = document.createElement("h3");
     heading.textContent = STATUS_LABELS[status];
     const count = document.createElement("p");
     count.className = "stat-value";
     count.textContent = String(totals[status]);
-    card.append(heading, count);
+    card.append(iconWrap, heading, count);
     container.append(card);
   }
 }

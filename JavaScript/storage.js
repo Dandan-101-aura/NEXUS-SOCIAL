@@ -77,6 +77,9 @@ export function validateStoredRequest(request) {
           || ["conclusao_declarada", "recebimento_confirmado"].includes(request.status)
             && isString(request.assignedVolunteerId)
     )
+    && (request.suspendedVolunteerId === undefined
+      || request.suspendedVolunteerId === null
+      || isString(request.suspendedVolunteerId))
     && isIsoDate(request.createdAt)
     && isIsoDate(request.updatedAt)
     && isNullableIsoDate(request.completedAt)
@@ -398,6 +401,78 @@ export function updateRequest(requestId, update) {
 
   writeEnvelope(getStorage(), updatedRequests);
   return updatedRequest;
+}
+
+export function serializeCollection() {
+  const storage = getStorage();
+  let serialized;
+  try {
+    serialized = storage.getItem(STORAGE_KEY);
+  } catch (error) {
+    throw new StorageError("Não foi possível ler o armazenamento local.", "read-failed", error);
+  }
+
+  if (serialized === null) {
+    return JSON.stringify({ schemaVersion: SCHEMA_VERSION, requests: [] }, null, 2);
+  }
+
+  try {
+    return JSON.stringify(JSON.parse(serialized), null, 2);
+  } catch (error) {
+    throw new StorageError(
+      "Os dados locais não puderam ser exportados porque estão corrompidos. O original foi preservado.",
+      "corrupt",
+      error,
+    );
+  }
+}
+
+function makeCurrentBackupKey(storage) {
+  const base = `${STORAGE_KEY}.backup.v2.${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  let key = base;
+  let suffix = 1;
+  while (storage.getItem(key) !== null) {
+    key = `${base}.${suffix}`;
+    suffix += 1;
+  }
+  return key;
+}
+
+export function replaceCollection(requests, { confirmed = false } = {}) {
+  if (!confirmed) {
+    throw new StorageError("A substituição da coleção exige confirmação explícita.", "unauthorized");
+  }
+  if (!Array.isArray(requests) || !requests.every(validateStoredRequest)) {
+    throw new StorageError("Não foi possível restaurar: a coleção contém registros inválidos.", "invalid-data");
+  }
+
+  const incomingIds = requests.map((request) => request.id);
+  if (new Set(incomingIds).size !== incomingIds.length) {
+    throw new StorageError("Não foi possível restaurar: há identificadores duplicados.", "invalid-data");
+  }
+
+  const storage = getStorage();
+  let current;
+  try {
+    current = storage.getItem(STORAGE_KEY);
+  } catch (error) {
+    throw new StorageError("Não foi possível ler o armazenamento local.", "read-failed", error);
+  }
+
+  if (current !== null) {
+    try {
+      storage.setItem(makeCurrentBackupKey(storage), current);
+    } catch (error) {
+      throw new StorageError(
+        "Não foi possível criar uma cópia de segurança antes da restauração. A coleção original foi preservada.",
+        error?.name === "QuotaExceededError" ? "quota-exceeded" : "backup-failed",
+        error,
+      );
+    }
+  }
+
+  writeEnvelope(storage, requests);
+  return requests;
 }
 
 export function removeRequest(requestId, { authorized = false } = {}) {

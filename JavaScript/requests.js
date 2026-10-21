@@ -84,6 +84,28 @@ function makeId() {
   return `req-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
+// Converte a quantidade digitada em número. Aceita o formato brasileiro
+// ("2,5" e "1.234,5") e o formato com ponto ("2.5"). Qualquer outra coisa vira NaN.
+export function parseQuantity(value) {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return Number.NaN;
+  }
+  const text = value.trim();
+  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(text)) {
+    return Number(text.replace(/\./g, "").replace(",", "."));
+  }
+  if (/^\d+(,\d+)?$/.test(text)) {
+    return Number(text.replace(",", "."));
+  }
+  if (/^\d+(\.\d+)?$/.test(text)) {
+    return Number(text);
+  }
+  return Number.NaN;
+}
+
 export function validateRequestInput(input) {
   const errors = {};
   const source = input && typeof input === "object" && !Array.isArray(input) ? input : {};
@@ -91,11 +113,7 @@ export function validateRequestInput(input) {
     title: typeof source.title === "string" ? source.title.trim() : "",
     description: typeof source.description === "string" ? source.description.trim() : "",
     category: typeof source.category === "string" ? source.category : "",
-    quantity: source.quantity === "" || source.quantity === null
-      ? Number.NaN
-      : typeof source.quantity === "string" || typeof source.quantity === "number"
-        ? Number(source.quantity)
-        : Number.NaN,
+    quantity: parseQuantity(source.quantity),
     unit: typeof source.unit === "string" ? source.unit : "",
     region: typeof source.region === "string" ? source.region.trim() : "",
     declaredUrgency: typeof source.declaredUrgency === "string" ? source.declaredUrgency : "",

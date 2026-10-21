@@ -8,6 +8,7 @@ import {
   DEMO_PROFILES,
   reopenRequest,
   REQUEST_CATEGORY_OPTIONS,
+  REQUEST_LIMITS,
   REQUEST_UNIT_OPTIONS,
   REQUEST_URGENCY_OPTIONS,
   suspendForReview,
@@ -16,17 +17,26 @@ import {
 } from "./requests.js";
 import { getFilteredRequests, REQUEST_STATUS_OPTIONS } from "./queries.js";
 import { loadRequests, saveRequests, STORAGE_KEY, StorageError } from "./storage.js";
+import { createIcon, hydrateIcons } from "./icons.js";
+import { dismissToast, showToast } from "./toast.js";
+import { initTheme } from "./theme.js";
+import { navigateTo, pathFor, startRouter } from "./router.js";
+import { buildSampleRequests, downloadBackup } from "./backup.js";
 
+// ---------------------------------------------------------------------------
+// Elementos da página
+// ---------------------------------------------------------------------------
 const views = [...document.querySelectorAll(".view")];
 const navigationLinks = [...document.querySelectorAll(".nav-link[data-view]")];
+const detailsNavLink = document.querySelector("#details-nav-link");
 const navigation = document.querySelector("#site-navigation");
 const menuToggle = document.querySelector(".menu-toggle");
 const backdrop = document.querySelector(".nav-backdrop");
 const announcement = document.querySelector("#navigation-announcement");
 const mainContent = document.querySelector("#main-content");
 const requestForm = document.querySelector("#request-form");
-const formMessage = document.querySelector("#form-message");
-const storageMessage = document.querySelector("#storage-message");
+const descriptionInput = document.querySelector("#request-description");
+const descriptionCounter = document.querySelector("#request-description-counter");
 const requestList = document.querySelector("#request-list");
 const requestsEmpty = document.querySelector("#requests-empty");
 const requestsNoResults = document.querySelector("#requests-no-results");
@@ -39,21 +49,30 @@ const recentRequestList = document.querySelector("#dashboard-recent-list");
 const historyList = document.querySelector("#history-list");
 const historyEmpty = document.querySelector("#history-empty");
 const profileSelect = document.querySelector("#demo-profile");
-const actionMessage = document.querySelector("#action-message");
 const detailsEmpty = document.querySelector("#details-empty");
+const detailsEmptyTitle = document.querySelector("#details-empty-title");
+const detailsEmptyText = document.querySelector("#details-empty-text");
 const detailsContainer = document.querySelector("#selected-request-details");
+const exportButton = document.querySelector("#export-backup");
+const samplesButton = document.querySelector("#load-samples");
 const actionDialog = document.querySelector("#action-dialog");
 const actionDialogForm = document.querySelector("#action-dialog-form");
 const actionDialogTitle = document.querySelector("#action-dialog-title");
 const actionDialogDescription = document.querySelector("#action-dialog-description");
+const actionDialogConfirm = document.querySelector("#action-dialog-confirm");
+const actionDialogError = document.querySelector("#action-dialog-error");
 const actionReasonField = document.querySelector("#action-reason-field");
 const actionReason = document.querySelector("#action-reason");
 const actionReasonError = document.querySelector("#action-reason-error");
+
 let selectedRequestId = null;
 let pendingAction = null;
 let requests = [];
 let isSubmitting = false;
 
+// ---------------------------------------------------------------------------
+// Rótulos legíveis (a tela nunca mostra códigos técnicos crus)
+// ---------------------------------------------------------------------------
 const STATUS_LABELS = Object.freeze({
   aberto: "Aberta",
   em_atendimento: "Em atendimento",
@@ -63,16 +82,47 @@ const STATUS_LABELS = Object.freeze({
   suspenso_para_revisao: "Suspensa para revisão",
 });
 
-const URGENCY_LABELS = Object.freeze({
-  baixa: "Baixa",
-  media: "Média",
-  alta: "Alta",
+const URGENCY_LABELS = Object.freeze({ baixa: "Baixa", media: "Média", alta: "Alta" });
+
+const ROLE_LABELS = Object.freeze({
+  solicitante: "Solicitante",
+  voluntario: "Voluntário",
+  moderador: "Moderador",
 });
+
+const ACTION_LABELS = Object.freeze({
+  solicitacao_criada: "Solicitação cadastrada",
+  voluntario_atribuido: "Voluntário assumiu o atendimento",
+  voluntario_desistiu: "Voluntário desistiu",
+  conclusao_declarada: "Conclusão declarada",
+  recebimento_confirmado_demo: "Recebimento confirmado (demonstração)",
+  solicitacao_cancelada: "Solicitação cancelada",
+  solicitacao_suspensa: "Suspensa para revisão",
+  solicitacao_reaberta: "Solicitação reaberta",
+  registro_legado_migrado: "Registro migrado do esquema anterior",
+});
+
+
 
 function currentProfile() {
   return DEMO_PROFILES[profileSelect.value];
 }
 
+function actorLabel(actorId) {
+  return Object.values(DEMO_PROFILES).find((profile) => profile.id === actorId)?.label ?? actorId;
+}
+
+function shortId(id) {
+  return id.slice(0, 8).toUpperCase();
+}
+
+function formatDate(date) {
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(date));
+}
+
+// ---------------------------------------------------------------------------
+// Navegação lateral (mobile)
+// ---------------------------------------------------------------------------
 function closeMobileNavigation() {
   navigation.classList.remove("is-open");
   backdrop.hidden = true;
@@ -81,6 +131,48 @@ function closeMobileNavigation() {
   navigation.inert = window.matchMedia("(max-width: 680px)").matches;
 }
 
+menuToggle.addEventListener("click", () => {
+  const isOpen = navigation.classList.toggle("is-open");
+  backdrop.hidden = !isOpen;
+  navigation.inert = !isOpen && window.matchMedia("(max-width: 680px)").matches;
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+  menuToggle.setAttribute("aria-label", isOpen ? "Fechar navegação" : "Abrir navegação");
+  if (isOpen) {
+    navigationLinks[0].focus();
+  }
+});
+
+backdrop.addEventListener("click", () => {
+  closeMobileNavigation();
+  menuToggle.focus();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && navigation.classList.contains("is-open")) {
+    closeMobileNavigation();
+    menuToggle.focus();
+  }
+});
+
+for (const link of navigationLinks) {
+  // Clicar no link da tela atual não muda o endereço, então fechamos o menu aqui também.
+  link.addEventListener("click", closeMobileNavigation);
+}
+
+function updateNavigationForViewport() {
+  const isMobile = window.matchMedia("(max-width: 680px)").matches;
+  navigation.inert = isMobile && !navigation.classList.contains("is-open");
+  if (!isMobile) {
+    closeMobileNavigation();
+  }
+}
+
+window.addEventListener("resize", updateNavigationForViewport);
+updateNavigationForViewport();
+
+// ---------------------------------------------------------------------------
+// Selects preenchidos a partir das listas de requests.js
+// ---------------------------------------------------------------------------
 function populateSelect(select, options) {
   const placeholder = select.options[0];
   select.replaceChildren(placeholder);
@@ -99,10 +191,12 @@ populateSelect(categoryFilter, REQUEST_CATEGORY_OPTIONS);
 populateSelect(statusFilter, REQUEST_STATUS_OPTIONS);
 populateSelect(urgencyFilter, REQUEST_URGENCY_OPTIONS);
 
-function showView(viewName, moveFocus = true) {
+// ---------------------------------------------------------------------------
+// Telas e roteamento (o endereço #/... decide qual tela aparece)
+// ---------------------------------------------------------------------------
+function showView(viewName, moveFocus) {
   const targetView = document.querySelector(`#view-${viewName}`);
   const targetLink = navigationLinks.find((link) => link.dataset.view === viewName);
-
   if (!targetView || !targetLink) {
     return;
   }
@@ -116,7 +210,6 @@ function showView(viewName, moveFocus = true) {
   for (const link of navigationLinks) {
     const isCurrent = link === targetLink;
     link.classList.toggle("is-active", isCurrent);
-
     if (isCurrent) {
       link.setAttribute("aria-current", "page");
     } else {
@@ -124,116 +217,28 @@ function showView(viewName, moveFocus = true) {
     }
   }
 
-  announcement.textContent = targetView.querySelector("h1").textContent;
+  const title = VIEW_TITLES[viewName];
+  announcement.textContent = title;
+  document.title = `${title} | NEXUS SOCIAL`;
   closeMobileNavigation();
 
   if (moveFocus) {
-    mainContent.focus();
+    mainContent.focus({ preventScroll: true });
+    window.scrollTo({ top: 0 });
   }
 }
 
-for (const link of navigationLinks) {
-  link.addEventListener("click", () => showView(link.dataset.view));
-}
-
-for (const button of document.querySelectorAll("[data-navigate]")) {
-  button.addEventListener("click", (event) => {
-    if (button instanceof HTMLAnchorElement) {
-      event.preventDefault();
-    }
-    showView(button.dataset.navigate);
-  });
-}
-
-menuToggle.addEventListener("click", () => {
-  const isOpen = navigation.classList.toggle("is-open");
-  backdrop.hidden = !isOpen;
-  navigation.inert = !isOpen && window.matchMedia("(max-width: 680px)").matches;
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-  menuToggle.setAttribute("aria-label", isOpen ? "Fechar navegação" : "Abrir navegação");
-
-  if (isOpen) {
-    navigationLinks[0].focus();
+function handleRoute({ view, id }, { initial }) {
+  if (view === "details") {
+    selectedRequestId = id ?? selectedRequestId;
+    renderSelectedRequest();
   }
-});
-
-backdrop.addEventListener("click", () => {
-  closeMobileNavigation();
-  menuToggle.focus();
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && navigation.classList.contains("is-open")) {
-    closeMobileNavigation();
-    menuToggle.focus();
-  }
-});
-
-function updateNavigationForViewport() {
-  const isMobile = window.matchMedia("(max-width: 680px)").matches;
-  navigation.inert = isMobile && !navigation.classList.contains("is-open");
-  if (!isMobile) {
-    closeMobileNavigation();
-  }
+  showView(view, !initial);
 }
 
-window.addEventListener("resize", updateNavigationForViewport);
-updateNavigationForViewport();
-
-function setNotice(notice, message, type) {
-  notice.replaceChildren();
-  notice.className = `notice notice-${type}`;
-  const icon = document.createElement("span");
-  icon.className = "notice-icon";
-  icon.setAttribute("aria-hidden", "true");
-  icon.textContent = type === "success" ? "✓" : type === "error" ? "!" : "i";
-  const text = document.createElement("p");
-  text.textContent = message;
-  notice.append(icon, text);
-  notice.hidden = false;
-}
-
-function clearFieldErrors() {
-  for (const field of requestForm.elements) {
-    if (!(field instanceof HTMLElement) || !field.name) {
-      continue;
-    }
-    const error = document.querySelector(`#${field.id}-error`);
-    if (error) {
-      error.textContent = "";
-    }
-    field.removeAttribute("aria-invalid");
-  }
-}
-
-function showFieldErrors(errors) {
-  clearFieldErrors();
-  for (const [fieldName, message] of Object.entries(errors)) {
-    const field = requestForm.elements.namedItem(fieldName);
-    const error = field instanceof HTMLElement
-      ? document.querySelector(`#${field.id}-error`)
-      : null;
-    if (field instanceof HTMLElement) {
-      field.setAttribute("aria-invalid", "true");
-    }
-    if (error) {
-      error.textContent = message;
-    }
-  }
-
-  const firstInvalidField = Object.keys(errors)
-    .map((name) => requestForm.elements.namedItem(name))
-    .find((field) => field instanceof HTMLElement);
-  firstInvalidField?.focus();
-}
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(date));
-}
-
+// ---------------------------------------------------------------------------
+// Cartões
+// ---------------------------------------------------------------------------
 function appendDetail(container, label, value) {
   const detail = document.createElement("p");
   detail.className = "request-detail";
@@ -241,6 +246,26 @@ function appendDetail(container, label, value) {
   strong.textContent = `${label}: `;
   detail.append(strong, document.createTextNode(value));
   container.append(detail);
+}
+
+function makeChip(text, iconName, extraClass = "") {
+  const chip = document.createElement("span");
+  chip.className = `chip ${extraClass}`.trim();
+  if (iconName) {
+    chip.append(createIcon(iconName));
+  }
+  chip.append(document.createTextNode(text));
+  return chip;
+}
+
+function makeButton(label, action, requestId, style = "button-secondary") {
+  const button = document.createElement("button");
+  button.className = `button ${style}`;
+  button.type = "button";
+  button.dataset.action = action;
+  button.dataset.requestId = requestId;
+  button.textContent = label;
+  return button;
 }
 
 function actionOptions(request) {
@@ -291,12 +316,17 @@ function actionOptions(request) {
   return options;
 }
 
-function createRequestCard(request, includeDetailsButton = false) {
+// headingLevel: 2 na tela de detalhes (logo abaixo do <h1>), 3 dentro de listas com <h2>.
+function createRequestCard(request, { withDetailsButton = false, headingLevel = 2, index = 0 } = {}) {
   const card = document.createElement("article");
   card.className = "request-card";
+  card.dataset.requestId = request.id;
+  card.tabIndex = -1;
+  card.style.setProperty("--i", String(index));
+
   const heading = document.createElement("div");
   heading.className = "request-card-heading";
-  const title = document.createElement("h2");
+  const title = document.createElement(`h${headingLevel}`);
   title.textContent = request.title;
   const status = document.createElement("span");
   status.className = `status-badge status-${request.status}`;
@@ -305,21 +335,29 @@ function createRequestCard(request, includeDetailsButton = false) {
 
   const identifier = document.createElement("p");
   identifier.className = "request-id";
-  identifier.textContent = `ID: ${request.id}`;
+  identifier.textContent = `Protocolo ${shortId(request.id)}`;
+  identifier.title = request.id;
+
   const description = document.createElement("p");
   description.className = "request-description";
   description.textContent = request.description;
+
+  const meta = document.createElement("div");
+  meta.className = "request-meta";
+  meta.append(
+    makeChip(request.category),
+    makeChip(`${quantityFormatter.format(request.quantity)} ${request.unit}`),
+    makeChip(request.region, "map-pin"),
+    makeChip(`Urgência ${URGENCY_LABELS[request.declaredUrgency].toLowerCase()}`, null, `urgency-pill urgency-${request.declaredUrgency}`),
+  );
+
   const details = document.createElement("div");
   details.className = "request-details";
-  appendDetail(details, "Categoria", request.category);
-  appendDetail(details, "Quantidade", `${request.quantity} ${request.unit}`);
-  appendDetail(details, "Região aproximada", request.region);
-  appendDetail(details, "Urgência declarada", URGENCY_LABELS[request.declaredUrgency]);
   appendDetail(details, "Criada em", formatDate(request.createdAt));
   appendDetail(
     details,
     "Voluntário responsável",
-    request.assignedVolunteerId ?? "Sem voluntário ativo",
+    request.assignedVolunteerId ? actorLabel(request.assignedVolunteerId) : "Sem voluntário ativo",
   );
   if (request.cancellationReason) {
     appendDetail(details, "Motivo do cancelamento", request.cancellationReason);
@@ -336,30 +374,21 @@ function createRequestCard(request, includeDetailsButton = false) {
 
   const actions = document.createElement("div");
   actions.className = "request-actions";
-  actions.dataset.requestId = request.id;
   for (const option of actionOptions(request)) {
-    const button = document.createElement("button");
-    button.className = `button ${option.style}`;
-    button.type = "button";
-    button.dataset.action = option.action;
-    button.dataset.requestId = request.id;
-    button.textContent = option.label;
-    actions.append(button);
+    actions.append(makeButton(option.label, option.action, request.id, option.style));
   }
-  if (includeDetailsButton) {
-    const detailsButton = document.createElement("button");
-    detailsButton.className = "button button-secondary";
-    detailsButton.type = "button";
-    detailsButton.dataset.action = "details";
-    detailsButton.dataset.requestId = request.id;
-    detailsButton.textContent = "Ver detalhes";
-    actions.append(detailsButton);
+  if (withDetailsButton) {
+    actions.append(makeButton("Ver detalhes", "details", request.id));
   }
 
-  card.append(heading, identifier, description, details, actions);
+  card.append(heading, identifier, description, meta, details, actions);
   return card;
 }
 
+
+// ---------------------------------------------------------------------------
+// Renderização
+// ---------------------------------------------------------------------------
 function renderRequestList() {
   requestList.replaceChildren();
   const { matches, groupedRequests } = getFilteredRequests(requests, {
@@ -381,9 +410,9 @@ function renderRequestList() {
     heading.textContent = label;
     const cards = document.createElement("div");
     cards.className = "request-group-list";
-    for (const request of groupRequests) {
-      cards.append(createRequestCard(request, true));
-    }
+    groupRequests.forEach((request, index) => {
+      cards.append(createRequestCard(request, { withDetailsButton: true, headingLevel: 3, index }));
+    });
     group.append(heading, cards);
     requestList.append(group);
   }
@@ -396,12 +425,16 @@ function renderRecentRequests() {
   emptyState.hidden = requests.length > 0;
   recentRequestList.hidden = recentRequests.length === 0;
 
-  for (const request of recentRequests) {
+  recentRequests.forEach((request, index) => {
     const card = document.createElement("article");
     card.className = "request-card recent-request-card";
+    card.dataset.requestId = request.id;
+    card.tabIndex = -1;
+    card.style.setProperty("--i", String(index));
+
     const heading = document.createElement("div");
     heading.className = "request-card-heading";
-    const title = document.createElement("h2");
+    const title = document.createElement("h3");
     title.textContent = request.title;
     const status = document.createElement("span");
     status.className = `status-badge status-${request.status}`;
@@ -410,62 +443,70 @@ function renderRecentRequests() {
 
     const identifier = document.createElement("p");
     identifier.className = "request-id";
-    identifier.textContent = `ID: ${request.id} · ${request.category} · Criada em ${formatDate(request.createdAt)}`;
-    const openDetails = document.createElement("button");
-    openDetails.className = "button button-secondary";
-    openDetails.type = "button";
-    openDetails.dataset.action = "details";
-    openDetails.dataset.requestId = request.id;
-    openDetails.textContent = "Abrir detalhes";
+    identifier.textContent = `Protocolo ${shortId(request.id)} · ${request.category} · Criada em ${formatDate(request.createdAt)}`;
+    identifier.title = request.id;
+
     const actions = document.createElement("div");
     actions.className = "request-actions";
-    actions.append(openDetails);
+    actions.append(makeButton("Abrir detalhes", "details", request.id));
     card.append(heading, identifier, actions);
     recentRequestList.append(card);
-  }
+  });
 }
 
 function renderSelectedRequest() {
   detailsContainer.replaceChildren();
   const selected = requests.find((request) => request.id === selectedRequestId);
   detailsEmpty.hidden = Boolean(selected);
+
   if (selected) {
-    detailsContainer.append(createRequestCard(selected));
+    detailsContainer.append(createRequestCard(selected, { headingLevel: 2 }));
+  } else if (selectedRequestId) {
+    detailsEmptyTitle.textContent = "Solicitação não encontrada";
+    detailsEmptyText.textContent = "Não existe uma solicitação com este endereço neste navegador. Ela pode ter sido removida ou criada em outro navegador.";
+  } else {
+    detailsEmptyTitle.textContent = "Nenhuma solicitação selecionada";
+    detailsEmptyText.textContent = "Os detalhes serão exibidos quando houver uma solicitação disponível.";
   }
+
+  // O link "Detalhes" do menu passa a apontar para a solicitação aberta por último.
+  detailsNavLink.href = pathFor("details", selectedRequestId);
 }
 
 function renderHistory() {
   historyList.replaceChildren();
-  const entries = requests.flatMap((request) => request.history.map((entry) => ({
-    ...entry,
-    requestId: request.id,
-    requestTitle: request.title,
-  }))).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  const entries = requests
+    .flatMap((request) => request.history.map((entry) => ({
+      ...entry,
+      requestId: request.id,
+      requestTitle: request.title,
+    })))
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
   historyEmpty.hidden = entries.length > 0;
   historyList.hidden = entries.length === 0;
 
-  for (const entry of entries) {
+  entries.forEach((entry, index) => {
     const item = document.createElement("li");
     item.className = "history-entry";
+    item.style.setProperty("--i", String(index));
+
     const heading = document.createElement("h2");
     heading.textContent = entry.requestTitle;
     const detail = document.createElement("p");
+    detail.className = "request-description";
     detail.textContent = entry.description;
+
     const previous = entry.previousStatus ? STATUS_LABELS[entry.previousStatus] ?? entry.previousStatus : "—";
     const next = entry.newStatus ? STATUS_LABELS[entry.newStatus] ?? entry.newStatus : "—";
     const statusLine = document.createElement("p");
     statusLine.className = "history-status";
-    statusLine.textContent = `Estado: ${previous} → ${next} · Ação: ${entry.actionType}`;
+    statusLine.textContent = `${ACTION_LABELS[entry.actionType] ?? entry.actionType} · Estado: ${previous} → ${next}`;
+
     const metadata = document.createElement("p");
     metadata.className = "request-id";
-    metadata.textContent = `${formatDate(entry.timestamp)} · ID: ${entry.requestId} · Perfil: ${entry.role} (${entry.actorId})`;
-    const detailsButton = document.createElement("button");
-    detailsButton.className = "button button-secondary";
-    detailsButton.type = "button";
-    detailsButton.dataset.action = "details";
-    detailsButton.dataset.requestId = entry.requestId;
-    detailsButton.textContent = "Ver solicitação";
+    metadata.textContent = `${formatDate(entry.timestamp)} · ${ROLE_LABELS[entry.role] ?? entry.role} (${actorLabel(entry.actorId)}) · Protocolo ${shortId(entry.requestId)}`;
+
     item.append(heading, detail, statusLine, metadata);
     if (entry.reason) {
       const reason = document.createElement("p");
@@ -475,10 +516,10 @@ function renderHistory() {
     }
     const actions = document.createElement("div");
     actions.className = "request-actions";
-    actions.append(detailsButton);
+    actions.append(makeButton("Ver solicitação", "details", entry.requestId));
     item.append(actions);
     historyList.append(item);
-  }
+  });
 }
 
 function renderApplication() {
@@ -489,17 +530,15 @@ function renderApplication() {
   renderDashboard(requests);
 }
 
-function readFormValues() {
-  const formData = new FormData(requestForm);
-  return Object.fromEntries(formData.entries());
-}
-
 function logUnexpectedError(message, error) {
   if (!(error instanceof StorageError) && !error?.validationErrors) {
     console.error(message, error);
   }
 }
 
+// ---------------------------------------------------------------------------
+// Ações das solicitações (diálogo de confirmação)
+// ---------------------------------------------------------------------------
 const ACTION_DIALOGS = Object.freeze({
   assign: {
     title: "Assumir atendimento",
@@ -542,22 +581,29 @@ const ACTION_DIALOGS = Object.freeze({
     requiresReason: true,
     reasonLabel: "Justificativa da reabertura",
   },
+  seed: {
+    title: "Carregar dados de exemplo",
+    description: "Serão acrescentadas solicitações fictícias de exemplo. Nenhuma solicitação existente será alterada ou removida.",
+    confirmLabel: "Adicionar exemplos",
+  },
 });
 
-function openActionDialog(action, requestId) {
+function openActionDialog(action, requestId, opener) {
   const configuration = ACTION_DIALOGS[action];
   if (!configuration) {
     return;
   }
-  pendingAction = { action, requestId, profile: currentProfile() };
+  pendingAction = { action, requestId, opener, profile: currentProfile() };
   actionDialogTitle.textContent = configuration.title;
   actionDialogDescription.textContent = configuration.description;
-  actionDialog.querySelector("#action-dialog-confirm").textContent = configuration.confirmLabel;
+  actionDialogConfirm.textContent = configuration.confirmLabel;
   actionReasonField.hidden = !configuration.requiresReason;
   actionReason.required = Boolean(configuration.requiresReason);
   actionReason.value = "";
   actionReasonError.textContent = "";
   actionReason.removeAttribute("aria-invalid");
+  actionDialogError.hidden = true;
+  actionDialogError.textContent = "";
   if (configuration.requiresReason) {
     actionReason.labels[0].textContent = configuration.reasonLabel;
   }
@@ -585,25 +631,41 @@ function executeAction(action, requestId, profile, reason) {
   }
 }
 
+// Depois de renderizar de novo, o botão que abriu o diálogo pode não existir mais.
+// Devolvemos o foco para ele ou, se sumiu, para o cartão da solicitação (acessibilidade por teclado).
+function restoreFocus({ opener, requestId }) {
+  requestAnimationFrame(() => {
+    if (opener?.isConnected) {
+      opener.focus();
+      return;
+    }
+    const card = requestId
+      ? document.querySelector(`.view:not([hidden]) .request-card[data-request-id="${CSS.escape(requestId)}"]`)
+      : null;
+    (card ?? mainContent).focus({ preventScroll: true });
+  });
+}
+
 function handleActionClick(event) {
   const button = event.target.closest("button[data-action][data-request-id]");
   if (!button) {
     return;
   }
   if (button.dataset.action === "details") {
-    selectedRequestId = button.dataset.requestId;
-    renderSelectedRequest();
-    showView("details");
+    navigateTo("details", button.dataset.requestId);
     return;
   }
-  actionMessage.hidden = true;
-  openActionDialog(button.dataset.action, button.dataset.requestId);
+  openActionDialog(button.dataset.action, button.dataset.requestId, button);
 }
 
 requestList.addEventListener("click", handleActionClick);
 detailsContainer.addEventListener("click", handleActionClick);
 recentRequestList.addEventListener("click", handleActionClick);
 historyList.addEventListener("click", handleActionClick);
+
+for (const button of document.querySelectorAll("[data-navigate]")) {
+  button.addEventListener("click", () => navigateTo(button.dataset.navigate));
+}
 
 requestSearch.addEventListener("input", renderRequestList);
 for (const control of [categoryFilter, statusFilter, urgencyFilter]) {
@@ -620,13 +682,27 @@ document.querySelector("#clear-request-filters").addEventListener("click", () =>
 });
 
 document.querySelector("#action-dialog-cancel").addEventListener("click", () => {
-  pendingAction = null;
   actionDialog.close();
 });
 
 actionDialog.addEventListener("close", () => {
+  const closed = pendingAction;
   pendingAction = null;
+  if (closed) {
+    restoreFocus(closed);
+  }
 });
+
+function addSampleRequests() {
+  const samples = buildSampleRequests(requests);
+  if (samples.length === 0) {
+    showToast("Os exemplos já estão cadastrados.", "info");
+    return;
+  }
+  requests = saveRequests([...requests, ...samples]);
+  renderApplication();
+  showToast(`${samples.length} solicitações de exemplo adicionadas.`, "success");
+}
 
 actionDialogForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -634,8 +710,11 @@ actionDialogForm.addEventListener("submit", (event) => {
     return;
   }
 
-  const configuration = ACTION_DIALOGS[pendingAction.action];
+  const { action, requestId, profile } = pendingAction;
+  const configuration = ACTION_DIALOGS[action];
   const reason = actionReason.value.trim();
+  actionDialogError.hidden = true;
+
   if (configuration.requiresReason && (reason.length < 3 || reason.length > 500)) {
     actionReasonError.textContent = "A justificativa deve ter de 3 a 500 caracteres.";
     actionReason.setAttribute("aria-invalid", "true");
@@ -643,63 +722,161 @@ actionDialogForm.addEventListener("submit", (event) => {
     return;
   }
   actionReason.removeAttribute("aria-invalid");
+  actionReasonError.textContent = "";
 
-  const submitButton = actionDialog.querySelector("#action-dialog-confirm");
-  submitButton.disabled = true;
+  actionDialogConfirm.disabled = true;
   try {
-    const updatedRequest = executeAction(
-      pendingAction.action,
-      pendingAction.requestId,
-      pendingAction.profile,
-      reason,
-    );
-    requests = requests.map((request) => (
-      request.id === updatedRequest.id ? updatedRequest : request
-    ));
-    renderApplication();
-    const successText = pendingAction.action === "confirm"
-      ? "Recebimento registrado somente na demonstração."
-      : `${configuration.confirmLabel} — alteração registrada.`;
-    setNotice(actionMessage, successText, "success");
-    storageMessage.hidden = true;
+    if (action === "seed") {
+      addSampleRequests();
+    } else {
+      const updatedRequest = executeAction(action, requestId, profile, reason);
+      requests = requests.map((request) => (request.id === updatedRequest.id ? updatedRequest : request));
+      renderApplication();
+      showToast(
+        action === "confirm"
+          ? "Recebimento registrado somente na demonstração."
+          : `${configuration.confirmLabel} — alteração registrada.`,
+        "success",
+      );
+    }
+    dismissToast("storage");
     actionDialog.close();
   } catch (error) {
-    logUnexpectedError("Falha ao executar ação da solicitação:", error);
-    actionReasonError.textContent = configuration.requiresReason ? error.message : "";
-    if (!configuration.requiresReason) {
-      setNotice(actionMessage, error.message, "error");
-    }
+    logUnexpectedError("Falha ao executar ação:", error);
+    // O erro aparece DENTRO do diálogo: um aviso fora dele ficaria escondido atrás do fundo escuro.
+    actionDialogError.textContent = error.message;
+    actionDialogError.hidden = false;
   } finally {
-    submitButton.disabled = false;
+    actionDialogConfirm.disabled = false;
+  }
+});
+
+samplesButton.addEventListener("click", () => openActionDialog("seed", null, samplesButton));
+
+exportButton.addEventListener("click", () => {
+  if (requests.length === 0) {
+    showToast("Ainda não há solicitações para exportar.", "info");
+    return;
+  }
+  try {
+    downloadBackup(requests);
+    showToast(`Backup com ${requests.length} solicitação(ões) baixado.`, "success");
+  } catch (error) {
+    logUnexpectedError("Falha ao exportar o backup:", error);
+    showToast("Não foi possível gerar o arquivo de backup.", "error");
   }
 });
 
 profileSelect.addEventListener("change", () => {
   requestForm.querySelector("#request-submit").disabled = currentProfile().role === "voluntario";
-  formMessage.hidden = true;
-  actionMessage.hidden = true;
   renderApplication();
 });
 
-function initialize() {
-  try {
-    requests = loadRequests();
-  } catch (error) {
-    logUnexpectedError("Falha ao inicializar os dados locais:", error);
-    requests = error instanceof StorageError ? error.validRequests ?? [] : [];
-    setNotice(storageMessage, error.message, "error");
-  }
-
-  renderApplication();
+// ---------------------------------------------------------------------------
+// Formulário: contador de caracteres e validação ao sair do campo (blur)
+// ---------------------------------------------------------------------------
+function errorElementFor(field) {
+  return document.querySelector(`#${field.id}-error`);
 }
 
-requestForm.addEventListener("input", () => {
+function clearFieldError(field) {
+  const error = errorElementFor(field);
+  if (error) {
+    error.textContent = "";
+  }
+  field.removeAttribute("aria-invalid");
+}
+
+function setFieldError(field, message) {
+  const error = errorElementFor(field);
+  if (error) {
+    error.textContent = message;
+  }
+  field.setAttribute("aria-invalid", "true");
+}
+
+function clearFieldErrors() {
+  for (const field of requestForm.elements) {
+    if (field instanceof HTMLElement && field.name) {
+      clearFieldError(field);
+    }
+  }
+}
+
+function showFieldErrors(errors) {
   clearFieldErrors();
-  formMessage.hidden = true;
+  for (const [fieldName, message] of Object.entries(errors)) {
+    const field = requestForm.elements.namedItem(fieldName);
+    if (field instanceof HTMLElement) {
+      setFieldError(field, message);
+    }
+  }
+  Object.keys(errors)
+    .map((name) => requestForm.elements.namedItem(name))
+    .find((field) => field instanceof HTMLElement)
+    ?.focus();
+}
+
+function readFormValues() {
+  return Object.fromEntries(new FormData(requestForm).entries());
+}
+
+function updateDescriptionCounter() {
+  const length = [...descriptionInput.value].length;
+  const max = REQUEST_LIMITS.description.max;
+  descriptionCounter.textContent = `${length} / ${max}`;
+  descriptionCounter.classList.toggle("is-warning", length >= max * 0.9 && length < max);
+  descriptionCounter.classList.toggle("is-limit", length >= max);
+}
+
+function validateSingleField(field) {
+  if (!(field instanceof HTMLElement) || !field.name || !requestForm.contains(field)) {
+    return;
+  }
+  // Não mostra erro em campo que o usuário apenas atravessou com Tab sem digitar nada.
+  if (field.dataset.touched !== "true" && !field.value) {
+    return;
+  }
+  const message = validateRequestInput(readFormValues()).errors[field.name];
+  if (message) {
+    setFieldError(field, message);
+  } else {
+    clearFieldError(field);
+  }
+}
+
+requestForm.addEventListener("input", (event) => {
+  const field = event.target;
+  if (!(field instanceof HTMLElement) || !field.name) {
+    return;
+  }
+  field.dataset.touched = "true";
+  clearFieldError(field);
+  if (field === descriptionInput) {
+    updateDescriptionCounter();
+  }
 });
 
-requestForm.addEventListener("change", () => {
-  clearFieldErrors();
+requestForm.addEventListener("change", (event) => {
+  const field = event.target;
+  if (field instanceof HTMLElement && field.name) {
+    field.dataset.touched = "true";
+    validateSingleField(field);
+  }
+});
+
+requestForm.addEventListener("focusout", (event) => validateSingleField(event.target));
+
+requestForm.addEventListener("reset", () => {
+  // O reset do navegador acontece depois do evento; esperamos para ler o estado final.
+  setTimeout(() => {
+    for (const field of requestForm.elements) {
+      if (field instanceof HTMLElement) {
+        delete field.dataset.touched;
+      }
+    }
+    updateDescriptionCounter();
+  }, 0);
 });
 
 requestForm.addEventListener("submit", (event) => {
@@ -708,7 +885,7 @@ requestForm.addEventListener("submit", (event) => {
     return;
   }
   if (!["solicitante", "moderador"].includes(currentProfile().role)) {
-    setNotice(formMessage, "O cadastro está disponível apenas aos perfis de solicitante ou moderador da demonstração.", "error");
+    showToast("O cadastro está disponível apenas aos perfis de solicitante ou moderador da demonstração.", "error");
     return;
   }
 
@@ -716,7 +893,7 @@ requestForm.addEventListener("submit", (event) => {
   const validation = validateRequestInput(readFormValues());
   if (!validation.isValid) {
     showFieldErrors(validation.errors);
-    setNotice(formMessage, "Revise os campos destacados antes de salvar.", "error");
+    showToast("Revise os campos destacados antes de salvar.", "error");
     return;
   }
 
@@ -730,39 +907,62 @@ requestForm.addEventListener("submit", (event) => {
     renderApplication();
     requestForm.reset();
     clearFieldErrors();
-    setNotice(formMessage, "Solicitação cadastrada e salva neste navegador.", "success");
-    storageMessage.hidden = true;
+    showToast("Solicitação cadastrada e salva neste navegador.", "success");
+    dismissToast("storage");
   } catch (error) {
     logUnexpectedError("Falha ao cadastrar a solicitação:", error);
     if (error.validationErrors) {
       showFieldErrors(error.validationErrors);
-      setNotice(formMessage, "Revise os campos destacados antes de salvar.", "error");
+      showToast("Revise os campos destacados antes de salvar.", "error");
     } else {
-      setNotice(formMessage, error.message, "error");
+      showToast(error.message, "error");
     }
   } finally {
     isSubmitting = false;
-    submitButton.disabled = false;
+    submitButton.disabled = currentProfile().role === "voluntario";
   }
 });
+
+// ---------------------------------------------------------------------------
+// Dados locais: carga inicial e sincronização entre abas
+// ---------------------------------------------------------------------------
+function showStorageError(error) {
+  showToast(error.message, "error", { key: "storage", duration: 0 });
+}
+
+function initialize() {
+  try {
+    requests = loadRequests();
+  } catch (error) {
+    logUnexpectedError("Falha ao inicializar os dados locais:", error);
+    requests = error instanceof StorageError ? error.validRequests ?? [] : [];
+    showStorageError(error);
+  }
+  renderApplication();
+}
 
 window.addEventListener("storage", (event) => {
   if (event.key !== STORAGE_KEY) {
     return;
   }
-
   try {
     requests = loadRequests();
-    storageMessage.hidden = true;
-    renderApplication();
+    dismissToast("storage");
   } catch (error) {
     logUnexpectedError("Falha ao atualizar dados locais de outra aba:", error);
     if (error instanceof StorageError && error.validRequests) {
       requests = error.validRequests;
     }
-    setNotice(storageMessage, error.message, "error");
-    renderApplication();
+    showStorageError(error);
   }
+  renderApplication();
 });
 
+// ---------------------------------------------------------------------------
+// Início
+// ---------------------------------------------------------------------------
+hydrateIcons();
+initTheme(document.querySelector("#theme-toggle"));
+updateDescriptionCounter();
 initialize();
+startRouter(handleRoute);
