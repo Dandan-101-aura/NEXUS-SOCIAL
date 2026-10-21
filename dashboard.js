@@ -1,3 +1,5 @@
+import { compareNewestFirst } from "./queries.js";
+
 const STATUS_LABELS = Object.freeze({
   aberto: "Solicitações abertas",
   em_atendimento: "Atendimentos em andamento",
@@ -9,13 +11,7 @@ const STATUS_LABELS = Object.freeze({
 
 const STATUS_ORDER = Object.freeze(Object.keys(STATUS_LABELS));
 
-export function compareNewestFirst(a, b) {
-  const dateDifference = Date.parse(b.createdAt) - Date.parse(a.createdAt);
-  return dateDifference || a.id.localeCompare(b.id);
-}
-
-export function renderDashboard(requests) {
-  const container = document.querySelector("#dashboard-stats");
+export function getRequestStatusTotals(requests) {
   const totals = Object.fromEntries(STATUS_ORDER.map((status) => [status, 0]));
 
   for (const request of requests) {
@@ -23,6 +19,13 @@ export function renderDashboard(requests) {
       totals[request.status] += 1;
     }
   }
+
+  return totals;
+}
+
+export function renderDashboard(requests) {
+  const container = document.querySelector("#dashboard-stats");
+  const totals = getRequestStatusTotals(requests);
 
   container.replaceChildren();
   for (const status of STATUS_ORDER) {
@@ -36,8 +39,6 @@ export function renderDashboard(requests) {
     card.append(heading, count);
     container.append(card);
   }
-
-  return totals;
 }
 
 export function getRecentRequests(requests, limit = 5) {

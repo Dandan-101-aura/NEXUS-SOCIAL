@@ -20,6 +20,7 @@ O MVP destina-se a demonstrações, avaliação de interface e aprendizagem sobr
 - `localStorage` para persistência neste navegador.
 
 Não há frameworks, bibliotecas visuais, serviços externos, backend ou dependências de execução.
+Playwright é uma dependência somente de desenvolvimento, usada nos testes E2E; o site não depende dela para funcionar.
 
 ## Funcionalidades
 
@@ -43,7 +44,14 @@ script.js       Navegação, eventos, renderização e integração dos módulos
 storage.js      Persistência, validação, versão do esquema e migração
 requests.js     Modelo, validação de entrada e regras de negócio
 dashboard.js    Indicadores e seleção das solicitações recentes
+queries.js      Normalização de pesquisa, filtros e ordenação reutilizáveis
+tests/          Testes automatizados unitários e de integração
+tests/e2e/      Testes de ponta a ponta com Playwright
+package.json    Tipo de módulo ES e comando para executar os testes
+package-lock.json Versões reproduzíveis das dependências de desenvolvimento
 README.md       Documentação do projeto
+FASE-6-RELATORIO.md Registro dos testes e resultados da Fase 6
+FASE-7-RELATORIO.md Registro da automação de interface e dos resultados da Fase 7
 ```
 
 ## Executar localmente
@@ -56,6 +64,54 @@ Os módulos ES devem ser servidos por HTTP; abrir `index.html` diretamente como 
 4. A aplicação será servida no navegador em um endereço local.
 
 O projeto não exige instalação de pacotes nem configuração de backend.
+
+## Testes automatizados
+
+Requisito para a suíte: Node.js com `node:test`, `node:assert/strict` e `structuredClone` (validado com Node.js 24.21.0).
+
+Instale as dependências de desenvolvimento uma vez:
+
+```powershell
+npm install
+```
+
+Os testes unitários e de integração continuam disponíveis sem Playwright:
+
+```powershell
+npm test
+```
+
+A suíte usa somente armazenamento em memória temporário; não abre o navegador pessoal nem acessa o `localStorage` real da aplicação. Cada teste que precisa de persistência instala sua própria instância simulada e a restaura ao terminar.
+
+Os testes E2E usam Playwright com Chromium em modo headless. O executor procura Chrome/Edge instalado no sistema; para escolher outro executável, defina `NEXUS_BROWSER_PATH`. Se não houver navegador de sistema, instale o Chromium gerenciado pelo Playwright:
+
+```powershell
+npx playwright install chromium
+npm run test:e2e
+```
+
+Execute apenas os testes de navegador com:
+
+```powershell
+npm run test:e2e
+```
+
+Ou execute testes unitários, de integração e de navegador juntos:
+
+```powershell
+npm run test:all
+```
+
+O servidor E2E escuta somente em `127.0.0.1` numa porta efêmera e serve apenas os arquivos da aplicação. Cada caso cria um contexto Playwright novo, com `localStorage` isolado e descartado ao fechar; nenhum perfil habitual ou dado persistido do usuário é usado. Em falhas E2E, capturas de tela são gravadas em `test-results/` (diretório ignorado pelo Git); os diagnósticos de console, erros JavaScript, requisições falhas e respostas HTTP de erro aparecem na saída do runner.
+
+Categorias cobertas:
+
+- **Unitários:** validação/cadastro, normalização de pesquisa, filtros combinados, ordenação, priorização e cálculos de indicadores.
+- **Integração:** armazenamento versionado, migração com backup, operações de status, histórico e falhas de gravação sem atualização parcial.
+- **Regressão:** preservação de dados corrompidos/incompatíveis, separação entre conclusão e recebimento, bloqueio de transições indevidas e ausência de mutação dos dados na consulta.
+- **Interface E2E:** inicialização, navegação, formulários e persistência, busca/filtros, transições pelo UI, histórico/detalhes, texto HTML literal, erros de navegador, menu por teclado e larguras 320, 360, 390, 768 e 1280 px.
+
+Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md) e [Fase 7](./FASE-7-RELATORIO.md) para os resultados efetivamente executados.
 
 ## Persistência local
 
@@ -109,7 +165,7 @@ Não use este MVP para organizar uma operação real de doações ou tomar decis
 
 ## Próximas versões possíveis
 
-- Testes automatizados reproduzíveis para validações, armazenamento e transições.
+- Ampliar gradualmente a cobertura E2E para outros motores de navegador e cenários de acessibilidade.
 - Melhorias adicionais de navegação assistiva e avaliação contínua de acessibilidade.
 - Exportação/importação local com confirmação explícita e cópia de segurança.
 - Pesquisa e indicadores adicionais definidos com critérios transparentes.
@@ -119,4 +175,4 @@ Esses itens são possibilidades futuras, não funcionalidades incluídas no MVP.
 
 ## Validação
 
-Não há suíte automatizada versionada no projeto. Nesta revisão, a sintaxe dos módulos foi verificada com `node --check`, e os fluxos de cadastro, armazenamento, consulta, transições, indicadores, navegação e responsividade foram exercitados manualmente no navegador, incluindo simulações de falha de quota e dados corrompidos. Os dados usados nos testes foram temporários e removidos ao final.
+A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md) e [Fase 7](./FASE-7-RELATORIO.md) para resultados efetivamente executados e limitações.

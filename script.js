@@ -1,4 +1,4 @@
-import { compareNewestFirst, getRecentRequests, renderDashboard } from "./dashboard.js";
+import { getRecentRequests, renderDashboard } from "./dashboard.js";
 import {
   assignVolunteer,
   cancelRequest,
@@ -14,6 +14,7 @@ import {
   validateRequestInput,
   withdrawFromRequest,
 } from "./requests.js";
+import { getFilteredRequests, REQUEST_STATUS_OPTIONS } from "./queries.js";
 import { loadRequests, saveRequests, STORAGE_KEY, StorageError } from "./storage.js";
 
 const views = [...document.querySelectorAll(".view")];
@@ -68,24 +69,6 @@ const URGENCY_LABELS = Object.freeze({
   alta: "Alta",
 });
 
-const STATUS_FILTER_OPTIONS = Object.freeze([
-  Object.freeze({ value: "aberto", label: "Aberta" }),
-  Object.freeze({ value: "em_atendimento", label: "Em atendimento" }),
-  Object.freeze({ value: "conclusao_declarada", label: "Conclusão declarada" }),
-  Object.freeze({ value: "recebimento_confirmado", label: "Recebimento confirmado" }),
-  Object.freeze({ value: "cancelado", label: "Cancelada" }),
-  Object.freeze({ value: "suspenso_para_revisao", label: "Suspensa para revisão" }),
-]);
-
-const URGENCY_PRIORITY = Object.freeze({ alta: 0, media: 1, baixa: 2 });
-const NON_OPEN_STATUS_ORDER = Object.freeze([
-  "em_atendimento",
-  "conclusao_declarada",
-  "recebimento_confirmado",
-  "cancelado",
-  "suspenso_para_revisao",
-]);
-
 function currentProfile() {
   return DEMO_PROFILES[profileSelect.value];
 }
@@ -113,7 +96,7 @@ populateSelect(document.querySelector("#request-category"), REQUEST_CATEGORY_OPT
 populateSelect(document.querySelector("#request-unit"), REQUEST_UNIT_OPTIONS);
 populateSelect(document.querySelector("#request-urgency"), REQUEST_URGENCY_OPTIONS);
 populateSelect(categoryFilter, REQUEST_CATEGORY_OPTIONS);
-populateSelect(statusFilter, STATUS_FILTER_OPTIONS);
+populateSelect(statusFilter, REQUEST_STATUS_OPTIONS);
 populateSelect(urgencyFilter, REQUEST_URGENCY_OPTIONS);
 
 function showView(viewName, moveFocus = true) {
@@ -295,6 +278,8 @@ function actionOptions(request) {
       add("confirm", "Confirmar recebimento (demonstração)", "button-primary");
       add("suspend", "Suspender para revisão");
     }
+  } else if (request.status === "recebimento_confirmado" && profile.role === "moderador") {
+    add("suspend", "Suspender para revisão");
   } else if (request.status === "cancelado" || request.status === "suspenso_para_revisao") {
     if (profile.role === "moderador") {
       add("reopen", "Reabrir solicitação", "button-primary");
@@ -375,65 +360,14 @@ function createRequestCard(request, includeDetailsButton = false) {
   return card;
 }
 
-function normalizeSearchText(value) {
-  return String(value ?? "")
-    .normalize("NFC")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLocaleLowerCase("pt-BR");
-}
-
-function compareOldestFirst(a, b) {
-  const dateDifference = Date.parse(a.createdAt) - Date.parse(b.createdAt);
-  return dateDifference || a.id.localeCompare(b.id);
-}
-
-function getFilteredRequests() {
-  const term = normalizeSearchText(requestSearch.value);
-  const category = categoryFilter.value;
-  const status = statusFilter.value;
-  const urgency = urgencyFilter.value;
-
-  const matches = requests.filter((request) => {
-    const searchableText = [
-      request.title,
-      request.description,
-      request.category,
-    ].map(normalizeSearchText);
-
-    return (!term || searchableText.some((field) => field.includes(term)))
-      && (!category || request.category === category)
-      && (!status || request.status === status)
-      && (!urgency || request.declaredUrgency === urgency);
-  });
-
-  const openRequests = matches
-    .filter((request) => request.status === "aberto")
-    .sort((a, b) => (
-      URGENCY_PRIORITY[a.declaredUrgency] - URGENCY_PRIORITY[b.declaredUrgency]
-      || compareOldestFirst(a, b)
-    ));
-  const groupedRequests = [];
-
-  if (openRequests.length) {
-    groupedRequests.push(["Solicitações abertas · prioridade declarada", openRequests]);
-  }
-
-  for (const currentStatus of NON_OPEN_STATUS_ORDER) {
-    const statusRequests = matches
-      .filter((request) => request.status === currentStatus)
-      .sort(compareNewestFirst);
-    if (statusRequests.length) {
-      groupedRequests.push([STATUS_FILTER_OPTIONS.find((option) => option.value === currentStatus).label, statusRequests]);
-    }
-  }
-
-  return { matches, groupedRequests };
-}
-
 function renderRequestList() {
   requestList.replaceChildren();
-  const { matches, groupedRequests } = getFilteredRequests();
+  const { matches, groupedRequests } = getFilteredRequests(requests, {
+    term: requestSearch.value,
+    category: categoryFilter.value,
+    status: statusFilter.value,
+    urgency: urgencyFilter.value,
+  });
   requestsEmpty.hidden = requests.length > 0;
   requestsNoResults.hidden = requests.length === 0 || matches.length > 0;
   requestList.hidden = matches.length === 0;
