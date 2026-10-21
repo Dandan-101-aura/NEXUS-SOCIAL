@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getRecentRequests, getRequestStatusTotals } from "../dashboard.js";
+import { getRecentRequests, getRequestStatusTotals } from "../JavaScript/dashboard.js";
 import {
   getFilteredRequests,
   normalizeSearchText,

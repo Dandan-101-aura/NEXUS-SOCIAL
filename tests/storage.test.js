@@ -4,14 +4,14 @@ import {
   assignVolunteer,
   createRequest,
   DEMO_PROFILES,
-} from "../requests.js";
+} from "../JavaScript/requests.js";
 import {
   loadRequests,
   saveRequests,
   SCHEMA_VERSION,
   STORAGE_KEY,
   updateRequest,
-} from "../storage.js";
+} from "../JavaScript/storage.js";
 import { installIsolatedStorage, validRequestInput } from "./support.js";
 
 test("missing data initializes an empty versioned collection", (t) => {

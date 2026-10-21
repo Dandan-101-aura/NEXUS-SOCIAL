@@ -12,11 +12,17 @@ const STATIC_FILES = new Map([
   ["/index.html", ["index.html", "text/html; charset=utf-8"]],
   ["/favicon.ico", [null, null]],
   ["/style.css", ["style.css", "text/css; charset=utf-8"]],
-  ["/script.js", ["script.js", "text/javascript; charset=utf-8"]],
-  ["/storage.js", ["storage.js", "text/javascript; charset=utf-8"]],
-  ["/requests.js", ["requests.js", "text/javascript; charset=utf-8"]],
-  ["/dashboard.js", ["dashboard.js", "text/javascript; charset=utf-8"]],
   ["/queries.js", ["queries.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/script.js", ["JavaScript/script.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/storage.js", ["JavaScript/storage.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/requests.js", ["JavaScript/requests.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/dashboard.js", ["JavaScript/dashboard.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/icons.js", ["JavaScript/icons.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/toast.js", ["JavaScript/toast.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/theme.js", ["JavaScript/theme.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/router.js", ["JavaScript/router.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/backup.js", ["JavaScript/backup.js", "text/javascript; charset=utf-8"]],
+  ["/JavaScript/demo-data.js", ["JavaScript/demo-data.js", "text/javascript; charset=utf-8"]],
 ]);
 const SYSTEM_BROWSER_PATHS = [
   process.env.NEXUS_BROWSER_PATH,
@@ -175,7 +181,9 @@ export async function createRequestThroughForm(page, {
   await form.getByLabel("Região aproximada").fill(region);
   await form.getByLabel("Urgência declarada").selectOption(urgency);
   await form.getByRole("button", { name: "Salvar solicitação" }).click();
-  await form.getByText("Solicitação cadastrada e salva neste navegador.").waitFor();
+  await page.locator("#toast-region .toast-text", {
+    hasText: "Solicitação cadastrada e salva neste navegador.",
+  }).last().waitFor();
   const requests = await getStoredRequests(page);
   const request = requests.find((record) => record.title === title);
   if (!request) {

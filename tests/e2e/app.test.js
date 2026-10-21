@@ -24,6 +24,7 @@ test("starts empty, renders indicators and navigates across main views", async (
     ["dashboard", "Painel principal"],
   ]) {
     await page.locator(`[data-view="${view}"]`).click();
+    await page.locator(`#view-${view}`).waitFor({ state: "visible" });
     assert.equal(await page.locator("main .view:not([hidden]) h1").textContent(), heading);
     assert.equal(await page.locator("main").evaluate((main) => (
       [...main.querySelectorAll(".view")].filter((section) => !section.hidden).length
@@ -52,7 +53,7 @@ test("validates form errors, creates safe text content and persists after reload
   assert.equal((await getStoredRequests(page)).length, 0);
   await page.locator("#request-form").getByLabel("Quantidade").fill("-1");
   await page.getByRole("button", { name: "Salvar solicitação" }).click();
-  assert.match(await page.locator("#request-quantity-error").textContent(), /maior que zero/i);
+  assert.match(await page.locator("#request-quantity-error").textContent(), /quantidade numérica válida/i);
   assert.equal((await getStoredRequests(page)).length, 0);
 
   const title = '<strong>Kit "especial" & básico</strong>';
@@ -68,8 +69,8 @@ test("validates form errors, creates safe text content and persists after reload
   assert.equal(await page.locator("#dashboard-stats .stat-value").first().textContent(), "1");
 
   await page.locator('[data-view="requests"]').click();
-  assert.equal(await page.locator("#request-list .request-card h2").first().textContent(), title);
-  assert.equal(await page.locator("#request-list .request-card h2 strong").count(), 0);
+  assert.equal(await page.locator("#request-list .request-card h3").first().textContent(), title);
+  assert.equal(await page.locator("#request-list .request-card h3 strong").count(), 0);
   assert.equal(await page.locator("#request-list .request-card .request-description em").count(), 0);
   assert.equal(await page.locator("#request-list .request-description").first().textContent(), description);
 
@@ -101,7 +102,7 @@ test("searches, combines filters, reports no results and clears all criteria", a
 
   await page.locator('[data-view="requests"]').click();
   await page.getByLabel("Pesquisar").fill("  ARROZ   E FEIJÃO ");
-  assert.deepEqual(await page.locator("#request-list .request-card h2").allTextContents(), [
+  assert.deepEqual(await page.locator("#request-list .request-card h3").allTextContents(), [
     "Cesta inicial",
   ]);
   await page.getByLabel("Pesquisar").fill("termo inexistente");
@@ -112,7 +113,7 @@ test("searches, combines filters, reports no results and clears all criteria", a
   await page.locator("#filter-category").selectOption("Produtos de higiene");
   await page.getByLabel("Status").selectOption("aberto");
   await page.locator("#filter-urgency").selectOption("alta");
-  assert.deepEqual(await page.locator("#request-list .request-card h2").allTextContents(), [
+  assert.deepEqual(await page.locator("#request-list .request-card h3").allTextContents(), [
     "Kit limpeza",
   ]);
 
@@ -247,10 +248,24 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
     viewportResults.push(await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
+      overflowingElements: [...document.body.querySelectorAll("*")]
+        .map((element) => ({ element, bounds: element.getBoundingClientRect() }))
+        .filter(({ bounds }) => bounds.right > document.documentElement.clientWidth + 1)
+        .map(({ element, bounds }) => ({
+          tag: element.tagName,
+          id: element.id,
+          className: typeof element.className === "string" ? element.className : "",
+          left: Math.round(bounds.left),
+          right: Math.round(bounds.right),
+        }))
+        .slice(0, 10),
     })));
     assert.equal(await page.locator(".profile-control select").isVisible(), true);
     assert.equal(await page.locator("main .view:not([hidden]) h1").isVisible(), true);
   }
-  assert.ok(viewportResults.every(({ clientWidth, scrollWidth }) => scrollWidth <= clientWidth));
+  assert.ok(
+    viewportResults.every(({ clientWidth, scrollWidth }) => scrollWidth <= clientWidth),
+    `horizontal overflow by viewport: ${JSON.stringify(viewportResults)}`,
+  );
   assertNoBrowserErrors(assert, diagnostics);
 }, { width: 390, height: 844 }));

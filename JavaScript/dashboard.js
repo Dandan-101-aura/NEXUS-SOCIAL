@@ -1,3 +1,6 @@
+import { createIcon } from "./icons.js";
+import { compareNewestFirst } from "../queries.js";
+
 const STATUS_LABELS = Object.freeze({
   aberto: "Solicitações abertas",
   em_atendimento: "Atendimentos em andamento",

@@ -14,8 +14,8 @@ import {
   suspendForReview,
   validateRequestInput,
   withdrawFromRequest,
-} from "../requests.js";
-import { loadRequests, saveRequests } from "../storage.js";
+} from "../JavaScript/requests.js";
+import { loadRequests, saveRequests } from "../JavaScript/storage.js";
 import { installIsolatedStorage, validRequestInput } from "./support.js";
 
 test("request input trims text and accepts current allowed values", () => {

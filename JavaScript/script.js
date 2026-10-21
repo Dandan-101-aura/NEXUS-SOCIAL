@@ -15,7 +15,7 @@ import {
   validateRequestInput,
   withdrawFromRequest,
 } from "./requests.js";
-import { getFilteredRequests, REQUEST_STATUS_OPTIONS } from "./queries.js";
+import { getFilteredRequests, REQUEST_STATUS_OPTIONS } from "../queries.js";
 import { loadRequests, saveRequests, STORAGE_KEY, StorageError } from "./storage.js";
 import { createIcon, hydrateIcons } from "./icons.js";
 import { dismissToast, showToast } from "./toast.js";
@@ -102,7 +102,15 @@ const ACTION_LABELS = Object.freeze({
   registro_legado_migrado: "Registro migrado do esquema anterior",
 });
 
+const VIEW_TITLES = Object.freeze({
+  dashboard: "Painel principal",
+  requests: "Solicitações",
+  "new-request": "Cadastrar solicitação",
+  details: "Detalhes da solicitação",
+  history: "Histórico",
+});
 
+const quantityFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
 
 function currentProfile() {
   return DEMO_PROFILES[profileSelect.value];

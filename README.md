@@ -46,11 +46,18 @@ Playwright é uma dependência somente de desenvolvimento, usada nos testes E2E;
 ```text
 index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
-script.js       Eventos, renderização e integração dos módulos
-storage.js      Persistência, validação, versão do esquema e migração
-requests.js     Modelo, validação de entrada e regras de negócio
-dashboard.js    Indicadores e seleção das solicitações recentes
-queries.js      Normalização de pesquisa, filtros e ordenação reutilizáveis
+JavaScript/
+  script.js     Eventos, renderização e integração dos módulos
+  storage.js    Persistência, validação, versão do esquema e migração
+  requests.js   Modelo, validação de entrada e regras de negócio
+  dashboard.js  Indicadores e seleção das solicitações recentes
+  router.js     Navegação por hash
+  theme.js      Preferência de tema
+  icons.js      Criação e hidratação de ícones SVG
+  toast.js      Notificações da interface
+  backup.js     Exportação e exemplos locais
+  demo-data.js  Dados fictícios opcionais
+queries.js      Consultas puras de pesquisa, filtros e ordenação
 tests/          Testes automatizados unitários e de integração
 tests/e2e/      Testes de ponta a ponta com Playwright
 package.json    Tipo de módulo ES e comando para executar os testes

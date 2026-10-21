@@ -1767,6 +1767,10 @@ h1 {
     letter-spacing: 0.02em;
   }
 
+  .topbar-brand > span:last-child {
+    display: none;
+  }
+
   .brand-mark-small {
     width: 26px;
     height: 26px;
