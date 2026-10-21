@@ -19,7 +19,7 @@ O MVP destina-se a demonstrações, avaliação de interface e aprendizagem sobr
 - JavaScript puro com módulos ES.
 - `localStorage` para persistência neste navegador.
 
-Não há frameworks, bibliotecas visuais, serviços externos, backend ou dependências de execução.
+Não há frameworks, bibliotecas visuais, backend ou dependências de execução. O único recurso externo são as fontes **Plus Jakarta Sans** e **Inter**, carregadas do Google Fonts; sem internet, a interface usa as fontes do sistema.
 
 ## Funcionalidades
 
@@ -33,16 +33,27 @@ Não há frameworks, bibliotecas visuais, serviços externos, backend ou depend�
 - Histórico local das ações e datas relevantes.
 - Renderização de texto fornecido pelo usuário como texto, sem interpretá-lo como HTML.
 - Mensagens de erro, sucesso, estados vazios e apresentação responsiva.
+- Tema claro, escuro ou automático (segue o sistema), com alternância suave e preferência salva neste navegador.
+- Notificações flutuantes (toasts) que não empurram o conteúdo.
+- Rotas por hash: `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); o botão voltar do navegador funciona entre as telas.
+- Quantidade aceita vírgula ou ponto decimal (`2,5` ou `2.5`).
+- Contador de caracteres na descrição e validação de cada campo ao sair dele.
+- Exportação das solicitações em arquivo JSON e carga opcional de exemplos fictícios (veja "Persistência local").
 
 ## Estrutura
 
 ```text
 index.html      Estrutura semântica e áreas de navegação
-style.css       Identidade visual, acessibilidade e responsividade
-script.js       Navegação, eventos, renderização e integração dos módulos
+style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
+script.js       Eventos, renderização e integração dos módulos
 storage.js      Persistência, validação, versão do esquema e migração
 requests.js     Modelo, validação de entrada e regras de negócio
 dashboard.js    Indicadores e seleção das solicitações recentes
+icons.js        Ícones SVG vetoriais
+toast.js        Notificações flutuantes
+theme.js        Tema claro/escuro/automático
+router.js       Roteamento por hash
+backup.js       Exportação de backup e dados de exemplo
 README.md       Documentação do projeto
 ```
 
@@ -65,7 +76,12 @@ Na primeira abertura sem dados, a aplicação inicializa uma coleção vazia. El
 
 Os dados pertencem somente ao armazenamento local deste navegador e podem ser modificados ou apagados pelo usuário. Não existe sincronização entre navegadores ou dispositivos.
 
-O MVP não inclui restauração de dados demonstrativos nem dados iniciais fictícios. Uma abertura sem dados começa com uma coleção vazia; não há ação de restauração que possa substituir solicitações existentes.
+Uma abertura sem dados continua começando com uma coleção vazia. Dois botões no painel principal trabalham com os dados locais:
+
+- **Exportar backup (JSON):** baixa uma cópia das solicitações. Não há importação nesta versão.
+- **Carregar exemplos:** após confirmação, **acrescenta** solicitações fictícias que ainda não existem (comparadas pelo título). Nunca altera, substitui nem remove solicitações existentes; os exemplos passam pela mesma validação e gravação do cadastro comum.
+
+O tema escolhido fica na chave separada `nexusSocial.theme`.
 
 ## Estados e regras
 
