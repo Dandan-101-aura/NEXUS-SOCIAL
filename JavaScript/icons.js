@@ -26,6 +26,10 @@ const ICON_PATHS = Object.freeze({
   "pause-circle": '<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   "map-pin": '<path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  basket: '<path d="M4 10h16l-1.6 9.2a1 1 0 0 1-1 .8H6.6a1 1 0 0 1-1-.8z"/><path d="m8 10 3-6M16 10l-3-6M9 14v3M12 14v3M15 14v3"/>',
+  shirt: '<path d="M8 3 3 6l2.5 4L8 9v12h8V9l2.5 1L21 6l-5-3a4 4 0 0 1-8 0z"/>',
+  droplet: '<path d="M12 3s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/><path d="M9.5 14a2.6 2.6 0 0 0 2 2.4"/>',
+  quote: '<path d="M7 17c-2 0-3-1.2-3-3.2C4 10.5 6 8 9 7M16 17c-2 0-3-1.2-3-3.2 0-3.3 2-5.8 5-6.8"/>',
 });
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";

@@ -22,8 +22,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&display=swap">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./editorial.css">
   <script type="module" src="./JavaScript/script.js"></script>
 </head>
 
@@ -123,7 +124,7 @@
             <div class="welcome-overlay" aria-hidden="true"></div>
             <div class="welcome-copy">
               <span class="welcome-kicker">AÇÃO SOCIAL & SOLIDARIEDADE</span>
-              <h2>A ajuda certa.<br> No momento certo.</h2>
+              <h2>A ajuda certa.<br> <em>No momento certo.</em></h2>
               <p>Conectando quem precisa de alimentos e itens essenciais a voluntários dispostos a fazer a diferença na comunidade.</p>
               <div class="welcome-actions">
                 <button class="button button-light" type="button" data-navigate="requests">
@@ -134,11 +135,17 @@
                 </button>
               </div>
             </div>
+            <p class="welcome-photo-credit">Imagem ilustrativa</p>
             <div class="welcome-tagline-box">
               <span class="welcome-tag-icon" data-icon="heart"></span>
               <p><strong>Comunidade Ativa</strong><br>Solidariedade direta, transparente e local</p>
             </div>
           </div>
+
+          <figure class="pull-quote">
+            <blockquote>Ninguém precisa pedir ajuda sozinho.</blockquote>
+            <figcaption>Princípio da plataforma</figcaption>
+          </figure>
 
           <div class="section-heading">
             <div>
@@ -205,6 +212,18 @@
                 solicitação</button>
             </div>
             <div class="request-list dashboard-recent-list" id="dashboard-recent-list"></div>
+          </section>
+
+          <section class="community" aria-labelledby="community-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">COMUNIDADE</p>
+                <h2 id="community-title">Histórias de impacto</h2>
+              </div>
+            </div>
+            <div class="story-grid" id="community-stories"></div>
+            <p class="community-note">Histórias fictícias, escritas para esta demonstração. Nomes e frases não
+              pertencem a pessoas reais.</p>
           </section>
 
           <section class="data-tools" aria-labelledby="data-tools-title">

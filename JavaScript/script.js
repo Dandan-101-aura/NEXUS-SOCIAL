@@ -18,6 +18,8 @@ import {
 import { getFilteredRequests, REQUEST_STATUS_OPTIONS } from "../queries.js";
 import { loadRequests, saveRequests, STORAGE_KEY, StorageError } from "./storage.js";
 import { createIcon, hydrateIcons } from "./icons.js";
+import { createCategoryBanner } from "./categories.js";
+import { renderCommunityStories } from "./community.js";
 import { dismissToast, showToast } from "./toast.js";
 import { initTheme } from "./theme.js";
 import { navigateTo, pathFor, startRouter } from "./router.js";
@@ -393,7 +395,7 @@ function createRequestCard(request, { withDetailsButton = false, headingLevel = 
   const urgencyBar = document.createElement("div");
   urgencyBar.className = `urgency-bar urgency-bar-${request.declaredUrgency}`;
 
-  card.append(heading, identifier, description, meta, details, actions, urgencyBar);
+  card.append(createCategoryBanner(request.category), heading, identifier, description, meta, details, actions, urgencyBar);
   return card;
 }
 
@@ -461,7 +463,7 @@ function renderRecentRequests() {
     const actions = document.createElement("div");
     actions.className = "request-actions";
     actions.append(makeButton("Abrir detalhes", "details", request.id));
-    card.append(heading, identifier, actions);
+    card.append(createCategoryBanner(request.category), heading, identifier, actions);
     recentRequestList.append(card);
   });
 }
@@ -976,6 +978,7 @@ window.addEventListener("storage", (event) => {
 hydrateIcons();
 initTheme(document.querySelector("#theme-toggle"));
 updateDescriptionCounter();
+renderCommunityStories(document.querySelector("#community-stories"));
 initialize();
 startRouter(handleRoute);
 
