@@ -8,7 +8,7 @@
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --bg: #f8fafc;
+  --bg: #f1f7fb;
   --surface: #ffffff;
   --surface-2: #f1f5f9;
   --glass: rgb(255 255 255 / 85%);
@@ -16,14 +16,14 @@
   --border-strong: #cbd5e1;
   --text: #0f172a;
   --muted: #475569;
-  --primary: #047857;
-  --primary-hover: #065f46;
+  --primary: #0789a8;
+  --primary-hover: #066b88;
   --on-primary: #ffffff;
-  --primary-soft: #ecfdf5;
-  --primary-text: #047857;
-  --ring: rgb(16 185 129 / 40%);
-  --glow-1: rgb(16 185 129 / 8%);
-  --glow-2: rgb(56 189 248 / 7%);
+  --primary-soft: #e4f7fb;
+  --primary-text: #067b98;
+  --ring: rgb(0 190 224 / 42%);
+  --glow-1: rgb(0 190 224 / 10%);
+  --glow-2: rgb(20 220 168 / 8%);
 
   --ok-bg: #ecfdf5;
   --ok-fg: #047857;
@@ -55,22 +55,22 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #020617;
-  --surface: #0f172a;
-  --surface-2: #1e293b;
-  --glass: rgb(15 23 42 / 72%);
-  --border: #1e293b;
-  --border-strong: #334155;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --primary: #10b981;
-  --primary-hover: #34d399;
-  --on-primary: #022c22;
-  --primary-soft: rgb(16 185 129 / 14%);
-  --primary-text: #6ee7b7;
-  --ring: rgb(52 211 153 / 60%);
-  --glow-1: rgb(16 185 129 / 11%);
-  --glow-2: rgb(99 102 241 / 12%);
+  --bg: #06101d;
+  --surface: #0b1b2d;
+  --surface-2: #12283b;
+  --glass: rgb(11 27 45 / 82%);
+  --border: #20374a;
+  --border-strong: #31586c;
+  --text: #e3f2f8;
+  --muted: #a0bac8;
+  --primary: #12b8d4;
+  --primary-hover: #38d9ce;
+  --on-primary: #031721;
+  --primary-soft: rgb(18 184 212 / 16%);
+  --primary-text: #64e2ea;
+  --ring: rgb(0 190 224 / 60%);
+  --glow-1: rgb(0 190 224 / 13%);
+  --glow-2: rgb(20 220 168 / 10%);
 
   --ok-bg: rgb(16 185 129 / 14%);
   --ok-fg: #6ee7b7;
@@ -198,37 +198,19 @@ p {
 
 .brand {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 11px;
   padding: 0 8px;
-  color: var(--text);
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #10b981, #047857);
-  box-shadow: 0 6px 14px rgb(4 120 87 / 35%), inset 0 1px 0 rgb(255 255 255 / 30%);
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 800;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-}
-
-.brand-name span {
-  color: var(--primary);
+.brand-logo {
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgb(3 14 25 / 22%);
 }
 
 .sidebar-caption,
@@ -365,6 +347,14 @@ p {
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.topbar-logo {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 10px;
 }
 
 .brand-mark-small {
@@ -1159,7 +1149,7 @@ h1 {
 .button-light {
   background: #fff;
   box-shadow: 0 6px 18px rgb(0 0 0 / 18%);
-  color: #065f46;
+  color: #066b88;
 }
 
 .button-light:hover {
@@ -1829,9 +1819,9 @@ h1 {
     display: none;
   }
 
-  .brand-mark-small {
-    width: 26px;
-    height: 26px;
+  .topbar-logo {
+    width: 34px;
+    height: 34px;
   }
 
   .profile-control {
@@ -2019,4 +2009,4 @@ h1 {
   100% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
-}
+}

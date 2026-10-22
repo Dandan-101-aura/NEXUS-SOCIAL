@@ -18,7 +18,7 @@
   --font-serif: "Fraunces", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
 /* Papel limpo, moderno e nítido: slate suave, superfícies brancas e esmeralda. */
-  --bg: #f8fafc;
+  --bg: #f1f7fb;
   --surface: #ffffff;
   --surface-2: #f1f5f9;
   --border: #e2e8f0;
@@ -26,31 +26,31 @@
   --text: #0f172a;
   --muted: #475569;
   --glass: rgb(255 255 255 / 85%);
-  --glow-1: rgb(16 185 129 / 8%);
-  --glow-2: rgb(56 189 248 / 7%);
+  --glow-1: rgb(0 190 224 / 10%);
+  --glow-2: rgb(20 220 168 / 8%);
 
   /* Cores das faixas de categoria limpas e harmoniosas */
-  --cat-alimentos-bg: #ecfdf5;
-  --cat-alimentos-fg: #047857;
-  --cat-roupas-bg: #eff6ff;
-  --cat-roupas-fg: #1d4ed8;
-  --cat-higiene-bg: #f0fdfa;
-  --cat-higiene-fg: #0f766e;
+  --cat-alimentos-bg: #e4f7fb;
+  --cat-alimentos-fg: #0789a8;
+  --cat-roupas-bg: #e8f4fa;
+  --cat-roupas-fg: #087da8;
+  --cat-higiene-bg: #e6f8f7;
+  --cat-higiene-fg: #067b86;
   --cat-abrigo-bg: #fefce8;
   --cat-abrigo-fg: #854d0e;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b1311;
-  --surface: #131d1a;
-  --surface-2: #1c2825;
-  --border: #25332f;
-  --border-strong: #38504a;
-  --text: #ece6d8;
-  --muted: #a3b0a8;
-  --glass: rgb(19 29 26 / 78%);
-  --glow-1: rgb(214 168 80 / 7%);
-  --glow-2: rgb(16 185 129 / 10%);
+  --bg: #06101d;
+  --surface: #0b1b2d;
+  --surface-2: #12283b;
+  --border: #20374a;
+  --border-strong: #31586c;
+  --text: #e3f2f8;
+  --muted: #a0bac8;
+  --glass: rgb(11 27 45 / 82%);
+  --glow-1: rgb(0 190 224 / 11%);
+  --glow-2: rgb(20 220 168 / 9%);
 
   --cat-alimentos-bg: #3a2f14;
   --cat-alimentos-fg: #f2d58a;
@@ -157,13 +157,13 @@ h1 {
 .welcome-overlay {
   background:
     linear-gradient(180deg, rgb(15 23 42 / 0%) 55%, rgb(15 23 42 / 62%) 100%),
-    linear-gradient(90deg, rgb(15 40 36 / 94%) 0%, rgb(4 100 74 / 84%) 42%, rgb(15 60 70 / 36%) 78%, rgb(15 23 42 / 18%) 100%);
+    linear-gradient(90deg, rgb(6 16 29 / 96%) 0%, rgb(5 88 116 / 88%) 42%, rgb(0 190 224 / 35%) 78%, rgb(6 16 29 / 22%) 100%);
 }
 
 :root[data-theme="dark"] .welcome-overlay {
   background:
     linear-gradient(180deg, rgb(2 6 23 / 0%) 50%, rgb(2 6 23 / 72%) 100%),
-    linear-gradient(90deg, rgb(3 22 19 / 96%) 0%, rgb(4 90 66 / 86%) 44%, rgb(15 50 60 / 42%) 80%, rgb(2 6 23 / 26%) 100%);
+    linear-gradient(90deg, rgb(6 16 29 / 97%) 0%, rgb(5 88 116 / 90%) 44%, rgb(0 190 224 / 38%) 80%, rgb(6 16 29 / 30%) 100%);
 }
 
 .welcome-copy h2 {
@@ -175,7 +175,7 @@ h1 {
 }
 
 .welcome-copy h2 em {
-  color: #a7f3d0;
+  color: #77e9e3;
   font-style: italic;
   font-weight: 500;
 }
