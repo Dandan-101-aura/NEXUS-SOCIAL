@@ -389,7 +389,11 @@ function createRequestCard(request, { withDetailsButton = false, headingLevel = 
     actions.append(makeButton("Ver detalhes", "details", request.id));
   }
 
-  card.append(heading, identifier, description, meta, details, actions);
+  // Barra de urgência animada
+  const urgencyBar = document.createElement("div");
+  urgencyBar.className = `urgency-bar urgency-bar-${request.declaredUrgency}`;
+
+  card.append(heading, identifier, description, meta, details, actions, urgencyBar);
   return card;
 }
 
@@ -974,3 +978,30 @@ initTheme(document.querySelector("#theme-toggle"));
 updateDescriptionCounter();
 initialize();
 startRouter(handleRoute);
+
+// ---------------------------------------------------------------------------
+// Avatar na sidebar — sincroniza com o perfil ativo
+// ---------------------------------------------------------------------------
+const sidebarAvatar = document.querySelector("#sidebar-avatar");
+const sidebarProfileName = document.querySelector("#sidebar-profile-name");
+
+const AVATAR_COLORS = {
+  solicitante: "#047857",
+  voluntario:  "#1d4ed8",
+  moderador:   "#7c3aed",
+};
+
+function updateSidebarAvatar() {
+  const profile = currentProfile();
+  const label = ROLE_LABELS[profile.role] ?? profile.role;
+  sidebarAvatar.textContent = label.charAt(0).toUpperCase();
+  sidebarAvatar.style.background = AVATAR_COLORS[profile.role] ?? "var(--primary)";
+  sidebarProfileName.textContent = label;
+}
+
+document.querySelector("#demo-profile").addEventListener("change", () => {
+  updateSidebarAvatar();
+  renderApplication();
+});
+
+updateSidebarAvatar();

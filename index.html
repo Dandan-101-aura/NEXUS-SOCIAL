@@ -65,6 +65,16 @@
         <span class="note-icon" data-icon="info"></span>
         <p>Perfis e histórico são locais. Não há coordenação confiável entre dispositivos ou usuários.</p>
       </div>
+
+      <div class="sidebar-profile">
+        <div class="profile-avatar" id="sidebar-avatar">S</div>
+        <div class="profile-info">
+          <span class="profile-name" id="sidebar-profile-name">Solicitante</span>
+          <span class="profile-status">
+            <span class="status-dot"></span> Ativo
+          </span>
+        </div>
+      </div>
     </aside>
 
     <div class="workspace">
@@ -109,19 +119,24 @@
           </p>
 
           <div class="welcome-card">
+            <div class="welcome-bg-image" style="background-image: url('./assets/banner-solidariedade.jpg');" aria-hidden="true"></div>
+            <div class="welcome-overlay" aria-hidden="true"></div>
             <div class="welcome-copy">
-              <span class="welcome-kicker">NEXUS SOCIAL</span>
+              <span class="welcome-kicker">AÇÃO SOCIAL & SOLIDARIEDADE</span>
               <h2>A ajuda certa.<br> No momento certo.</h2>
-              <p>Organize solicitações fictícias e acompanhe suas atualizações em um só lugar.</p>
-              <button class="button button-light" type="button" data-navigate="requests">
-                Ver solicitações <span class="btn-icon" data-icon="arrow-right"></span>
-              </button>
+              <p>Conectando quem precisa de alimentos e itens essenciais a voluntários dispostos a fazer a diferença na comunidade.</p>
+              <div class="welcome-actions">
+                <button class="button button-light" type="button" data-navigate="requests">
+                  Ver solicitações <span class="btn-icon" data-icon="arrow-right"></span>
+                </button>
+                <button class="button button-ghost-light" type="button" data-navigate="new-request">
+                  <span class="btn-icon" data-icon="plus-circle"></span> Pedir ajuda
+                </button>
+              </div>
             </div>
-            <div class="welcome-art" aria-hidden="true">
-              <span class="art-circle art-circle-one"></span>
-              <span class="art-circle art-circle-two"></span>
-              <span class="art-icon art-spark" data-icon="sparkles"></span>
-              <span class="art-icon art-heart" data-icon="heart"></span>
+            <div class="welcome-tagline-box">
+              <span class="welcome-tag-icon" data-icon="heart"></span>
+              <p><strong>Comunidade Ativa</strong><br>Solidariedade direta, transparente e local</p>
             </div>
           </div>
 
@@ -131,7 +146,38 @@
               <h2>Resumo das solicitações</h2>
             </div>
           </div>
-          <div class="stats-grid" id="dashboard-stats"></div>
+          <div class="stats-grid" id="dashboard-stats">
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-icon"></div>
+              <div class="skeleton skeleton-line"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+          </div>
           <p class="dashboard-count-note">Os indicadores mostram a quantidade de solicitações em cada status atual; não
             representam o total histórico de eventos. Conclusões declaradas e recebimentos confirmados são contados
             separadamente.</p>

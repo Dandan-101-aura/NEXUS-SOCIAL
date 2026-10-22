@@ -1,6 +1,19 @@
 import { createIcon } from "./icons.js";
 import { compareNewestFirst } from "../queries.js";
 
+// Anima número de 0 até o valor-alvo com easing suave
+function animateCount(element, target, duration = 700) {
+  const start = performance.now();
+  function step(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    element.textContent = Math.round(target * ease);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 const STATUS_LABELS = Object.freeze({
   aberto: "Solicitações abertas",
   em_atendimento: "Atendimentos em andamento",
@@ -48,7 +61,8 @@ export function renderDashboard(requests) {
     heading.textContent = STATUS_LABELS[status];
     const count = document.createElement("p");
     count.className = "stat-value";
-    count.textContent = String(totals[status]);
+    count.textContent = "0";
+    animateCount(count, totals[status]);
     card.append(iconWrap, heading, count);
     container.append(card);
   }
