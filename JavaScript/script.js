@@ -29,6 +29,8 @@ import { buildSampleRequests, downloadBackup } from "./backup.js";
 // Elementos da página
 // ---------------------------------------------------------------------------
 const views = [...document.querySelectorAll(".view")];
+const publicHome = document.querySelector("#public-home");
+const appShell = document.querySelector(".app-shell");
 const navigationLinks = [...document.querySelectorAll(".nav-link[data-view]")];
 const detailsNavLink = document.querySelector("#details-nav-link");
 const navigation = document.querySelector("#site-navigation");
@@ -105,6 +107,7 @@ const ACTION_LABELS = Object.freeze({
 });
 
 const VIEW_TITLES = Object.freeze({
+  home: "Conheça o NEXUS SOCIAL",
   dashboard: "Painel principal",
   requests: "Solicitações",
   "new-request": "Cadastrar solicitação",
@@ -205,11 +208,29 @@ populateSelect(urgencyFilter, REQUEST_URGENCY_OPTIONS);
 // Telas e roteamento (o endereço #/... decide qual tela aparece)
 // ---------------------------------------------------------------------------
 function showView(viewName, moveFocus) {
+  if (viewName === "home") {
+    publicHome.hidden = false;
+    appShell.hidden = true;
+    for (const link of navigationLinks) {
+      link.classList.remove("is-active");
+      link.removeAttribute("aria-current");
+    }
+    document.title = "NEXUS SOCIAL | A ajuda certa. No momento certo.";
+    if (moveFocus) {
+      publicHome.focus({ preventScroll: true });
+      window.scrollTo({ top: 0 });
+    }
+    return;
+  }
+
   const targetView = document.querySelector(`#view-${viewName}`);
   const targetLink = navigationLinks.find((link) => link.dataset.view === viewName);
   if (!targetView || !targetLink) {
     return;
   }
+
+  publicHome.hidden = true;
+  appShell.hidden = false;
 
   for (const view of views) {
     const isTarget = view === targetView;

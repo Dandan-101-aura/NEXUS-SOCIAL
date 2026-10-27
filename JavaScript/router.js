@@ -1,7 +1,8 @@
 // Roteamento leve por hash. Endereços:
-//   #/painel   #/solicitacoes   #/cadastrar   #/historico
+//   #/inicio   #/painel   #/solicitacoes   #/cadastrar   #/historico
 //   #/solicitacao/<id>   (link direto para os detalhes de uma solicitação)
 const VIEW_PATHS = Object.freeze({
+  home: "inicio",
   dashboard: "painel",
   requests: "solicitacoes",
   "new-request": "cadastrar",
@@ -20,6 +21,10 @@ export function pathFor(view, id = null) {
 }
 
 export function parseHash(hash = window.location.hash) {
+  if (hash && !hash.startsWith("#/")) {
+    return { view: "home", id: null };
+  }
+
   const cleaned = hash.replace(/^#\/?/, "").split("?")[0];
   const [first = "", ...rest] = cleaned.split("/");
 
@@ -36,7 +41,7 @@ export function parseHash(hash = window.location.hash) {
     return { view: "details", id };
   }
 
-  return { view: PATH_VIEWS[first] ?? "dashboard", id: null };
+  return { view: first ? PATH_VIEWS[first] ?? "dashboard" : "home", id: null };
 }
 
 export function navigateTo(view, id = null) {
@@ -52,6 +57,17 @@ export function navigateTo(view, id = null) {
 // handler(route, { initial }) roda na carga da página e a cada mudança de endereço
 // (inclusive o botão voltar/avançar do navegador).
 export function startRouter(handler) {
-  window.addEventListener("hashchange", () => handler(parseHash(), { initial: false }));
+  window.addEventListener("hashchange", () => {
+    const hash = window.location.hash;
+    if (!hash || hash.startsWith("#/")) {
+      handler(parseHash(hash), { initial: false });
+      return;
+    }
+
+    const anchor = document.getElementById(hash.slice(1));
+    if (anchor?.closest("#public-home")) {
+      handler({ view: "home", id: null }, { initial: false });
+    }
+  });
   handler(parseHash(), { initial: true });
 }

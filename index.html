@@ -25,15 +25,80 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&display=swap">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./editorial.css">
+  <link rel="stylesheet" href="./public.css">
   <script type="module" src="./JavaScript/script.js"></script>
 </head>
 
 <body>
-  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <main class="public-home" id="public-home" aria-labelledby="public-title" tabindex="-1">
+    <a class="skip-link" href="#public-content">Pular para o conteúdo principal</a>
+    <header class="public-header">
+      <a class="public-brand" href="#/inicio" aria-label="NEXUS SOCIAL, página inicial">
+        <img src="./assets/nexus-social-logo.jpg" alt="NEXUS SOCIAL">
+      </a>
+      <nav class="public-nav" aria-label="Navegação da apresentação">
+        <a class="public-how-link" href="#public-how-it-works">Como funciona</a>
+        <a class="button button-primary" href="#/painel">Abrir demonstração <span class="btn-icon" data-icon="arrow-right"></span></a>
+      </nav>
+    </header>
 
-  <div class="app-shell">
+    <div class="public-content" id="public-content" tabindex="-1">
+      <section class="public-hero" aria-labelledby="public-title">
+        <div class="public-hero-copy">
+          <h1 id="public-title">A ajuda certa.<br><em>No momento certo.</em></h1>
+          <p>Explore pedidos fictícios: cadastre uma solicitação, alterne entre três perfis simulados e acompanhe as alterações no histórico local.</p>
+          <div class="public-hero-actions">
+            <a class="button button-primary" href="#/painel">Abrir a demonstração <span class="btn-icon" data-icon="arrow-right"></span></a>
+            <a class="public-secondary-link" href="#public-how-it-works">Entenda o fluxo</a>
+          </div>
+          <p class="public-demo-note"><span class="public-demo-icon" data-icon="info"></span><span>Este projeto é uma demonstração local. Não organiza doações reais nem confirma entregas físicas.</span></p>
+        </div>
+        <figure class="public-hero-visual">
+          <div class="public-panel-preview" aria-label="Prévia ilustrativa do painel e dos três perfis da demonstração">
+            <h2>O que você pode experimentar</h2>
+            <dl class="public-profile-list">
+              <div>
+                <dt>Solicitante</dt>
+                <dd>Cadastrar pedidos e confirmar recebimentos na demonstração.</dd>
+              </div>
+              <div>
+                <dt>Voluntário</dt>
+                <dd>Assumir atendimentos e declarar a conclusão.</dd>
+              </div>
+              <div>
+                <dt>Moderador</dt>
+                <dd>Revisar pedidos e acompanhar as alterações registradas.</dd>
+              </div>
+            </dl>
+            <p class="public-preview-footnote">Perfis simulados · dados locais e fictícios</p>
+          </div>
+          <figcaption>Prévia ilustrativa do painel · use “Abrir a demonstração” para interagir</figcaption>
+        </figure>
+      </section>
+
+      <section class="public-flow" id="public-how-it-works" aria-labelledby="public-flow-title">
+        <div class="public-flow-heading">
+          <h2 id="public-flow-title">Do pedido ao histórico, etapa por etapa.</h2>
+          <p>Veja como a demonstração organiza o acompanhamento sem esconder seus limites.</p>
+        </div>
+        <ol class="public-flow-steps">
+          <li><h3>Registrar</h3><p>Pedidos de alimentos e itens básicos usam apenas a região aproximada, como bairro ou município.</p></li>
+          <li><h3>Acompanhar</h3><p>Os estados mostram a etapa declarada do atendimento, do pedido aberto à conclusão.</p></li>
+          <li><h3>Consultar</h3><p>As alterações aparecem no histórico local. Ele é demonstrativo e pode ser editado no navegador.</p></li>
+        </ol>
+      </section>
+    </div>
+
+    <footer class="public-footer">
+      <span>NEXUS SOCIAL · A ajuda certa. No momento certo.</span>
+      <span>Projeto demonstrativo · dados fictícios e locais</span>
+    </footer>
+  </main>
+
+  <div class="app-shell" hidden>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
     <aside class="sidebar" id="site-navigation" aria-label="Navegação principal">
-      <a class="brand" href="#/painel" aria-label="NEXUS SOCIAL, painel principal">
+      <a class="brand" href="#/inicio" aria-label="NEXUS SOCIAL, página inicial">
         <img class="brand-logo" src="./assets/nexus-social-logo.jpg" alt="NEXUS SOCIAL">
       </a>
 

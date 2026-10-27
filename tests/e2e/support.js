@@ -136,7 +136,7 @@ export async function openApp(t, viewport = { width: 1280, height: 900 }) {
 export async function runAppTest(t, callback, viewport) {
   const app = await openApp(t, viewport);
   try {
-    await app.page.goto(baseUrl, { waitUntil: "networkidle" });
+    await app.page.goto(`${baseUrl}#/painel`, { waitUntil: "networkidle" });
     return await callback(app);
   } catch (error) {
     let screenshotPath = "not captured";

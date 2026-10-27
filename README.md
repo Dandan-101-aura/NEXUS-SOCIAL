@@ -24,6 +24,7 @@ Playwright é uma dependência somente de desenvolvimento, usada nos testes E2E;
 
 ## Funcionalidades
 
+- Página pública de apresentação na entrada do site, com acesso explícito ao painel demonstrativo.
 - Navegação entre painel, solicitações, cadastro, detalhes e histórico sem recarregar a aplicação.
 - Cadastro de solicitações de alimentos não perecíveis, produtos de higiene, roupas e itens básicos de uso cotidiano.
 - Validação de campos, quantidade, categoria, unidade, urgência e região aproximada.
@@ -36,7 +37,7 @@ Playwright é uma dependência somente de desenvolvimento, usada nos testes E2E;
 - Mensagens de erro, sucesso, estados vazios e apresentação responsiva.
 - Tema claro, escuro ou automático (segue o sistema), com alternância suave e preferência salva neste navegador.
 - Notificações flutuantes (toasts) que não empurram o conteúdo.
-- Rotas por hash: `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); o botão voltar do navegador funciona entre as telas.
+- Rotas por hash: `#/inicio`, `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); a entrada sem rota mostra a apresentação pública, e o botão voltar do navegador funciona entre as telas.
 - Quantidade aceita vírgula ou ponto decimal (`2,5` ou `2.5`).
 - Contador de caracteres na descrição e validação de cada campo ao sair dele.
 - Exportação das solicitações em arquivo JSON e carga opcional de exemplos fictícios (veja "Persistência local").
@@ -46,6 +47,7 @@ Playwright é uma dependência somente de desenvolvimento, usada nos testes E2E;
 ```text
 index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
+public.css      Apresentação pública de entrada e seus ajustes responsivos
 JavaScript/
   script.js     Eventos, renderização e integração dos módulos
   storage.js    Persistência, validação, versão do esquema e migração
