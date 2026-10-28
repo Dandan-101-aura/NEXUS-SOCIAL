@@ -10,7 +10,6 @@ const FAILURE_ARTIFACTS = join(PROJECT_ROOT, "test-results");
 const APPLICATION_ROOTS = new Set(["JavaScript", "assets"]);
 const APPLICATION_FILES = new Set(["index.html", "style.css", "editorial.css"]);
 const BLOCKED_SEGMENTS = new Set(["tests", "node_modules", "test-results"]);
-const BLOCKED_FILES = new Set(["JavaScript/support.js"]);
 const CONTENT_TYPES = new Map([
   [".html", "text/html; charset=utf-8"],
   [".js", "text/javascript; charset=utf-8"],
@@ -103,10 +102,6 @@ function resolveApplicationPath(pathname) {
   ) {
     return null;
   }
-  if (BLOCKED_FILES.has(segments.join("/"))) {
-    return null;
-  }
-
   let allowedRoot;
   let filePath;
   if (segments.length === 1 && APPLICATION_FILES.has(segments[0])) {

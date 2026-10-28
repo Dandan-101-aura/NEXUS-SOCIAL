@@ -120,7 +120,7 @@ export default [
     },
   },
   {
-    files: ["JavaScript/support.js", "tests/**/*.js"],
+    files: ["tests/**/*.js"],
     languageOptions: {
       globals: {
         ...browserGlobals,

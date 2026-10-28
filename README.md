@@ -71,7 +71,6 @@ JavaScript/
   router.js     Navegação por hash
   script.js     Ponto de entrada mínimo da aplicação
   storage.js    Persistência, validação, versão do esquema e migração
-  support.js    Cópia não utilizada do harness E2E; não importada pela aplicação ou pela suíte atual
   theme.js      Preferência de tema
   toast.js      Notificações da interface
   views/

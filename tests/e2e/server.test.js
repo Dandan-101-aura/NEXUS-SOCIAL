@@ -72,7 +72,6 @@ test("does not expose test, dependency, package, hidden, or report files", async
     "/tests/requests.test.js",
     "/node_modules/playwright/package.json",
     "/test-results/",
-    "/JavaScript/support.js",
     "/package.json",
     "/package-lock.json",
     "/.gitignore",
@@ -85,6 +84,9 @@ test("does not expose test, dependency, package, hidden, or report files", async
       `${path} returned ${response.status}`,
     );
   }
+
+  const missingLegacyFile = await requestApplication("/JavaScript/support.js");
+  assert.equal(missingLegacyFile.status, 404);
 });
 
 test("rejects HTTP methods other than GET and HEAD", async () => {

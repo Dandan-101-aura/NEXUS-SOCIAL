@@ -34,7 +34,7 @@ Contagens de linhas antes da fase e após a formatação final:
 | `JavaScript/router.js`     |           57 | `JavaScript/router.js`                  |            61 |
 | `JavaScript/script.js`     |        1.010 | `JavaScript/script.js`                  |             3 |
 | `JavaScript/storage.js`    |          491 | `JavaScript/storage.js`                 |           576 |
-| `JavaScript/support.js`    |          204 | `JavaScript/support.js`                 |           290 |
+| `support.js` legado        |          204 | `support.js` legado                     |           290 |
 | `JavaScript/theme.js`      |           72 | `JavaScript/theme.js`                   |            86 |
 | `JavaScript/toast.js`      |          111 | `JavaScript/toast.js`                   |           111 |
 | `queries.js` (raiz)        |           74 | `JavaScript/queries.js` (movido)        |            87 |
@@ -68,7 +68,7 @@ O corpo que estava em `script.js` foi dividido entre o coordenador da aplicaçã
 
 ## Arquivos alterados
 
-- Aplicação e persistência: `JavaScript/application.js`, `JavaScript/dashboard.js`, `JavaScript/support.js`, `JavaScript/queries.js`, `JavaScript/backup.js`, `JavaScript/categories.js`, `JavaScript/community.js`, `JavaScript/demo-data.js`, `JavaScript/icons.js`, `JavaScript/requests.js`, `JavaScript/router.js`, `JavaScript/storage.js` e `JavaScript/theme.js`.
+- Aplicação e persistência: `JavaScript/application.js`, `JavaScript/dashboard.js`, o auxiliar legado de suporte, `JavaScript/queries.js`, `JavaScript/backup.js`, `JavaScript/categories.js`, `JavaScript/community.js`, `JavaScript/demo-data.js`, `JavaScript/icons.js`, `JavaScript/requests.js`, `JavaScript/router.js`, `JavaScript/storage.js` e `JavaScript/theme.js`.
 - Testes e servidor E2E: `tests/e2e/app.test.js`, `tests/e2e/support.js`, `tests/queries-dashboard.test.js`, `tests/requests.test.js` e `tests/storage.test.js`. As asserções e o número de testes foram preservados; em `storage.test.js`, somente a variável local não utilizada foi removida.
 - Ferramentas e documentação: `package.json`, `package-lock.json`, `README.md`.
 - Formatação global: `.vscode/settings.json`, `editorial.css`, `index.html` e `style.css`, além dos arquivos da aplicação e testes listados acima.
