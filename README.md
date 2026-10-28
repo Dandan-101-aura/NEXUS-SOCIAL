@@ -34,6 +34,7 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
 - Histórico local das ações e datas relevantes.
 - Renderização de texto fornecido pelo usuário como texto, sem interpretá-lo como HTML.
 - Mensagens de erro, sucesso, estados vazios e apresentação responsiva.
+- Histórias de impacto fictícias no painel, identificadas como conteúdo de demonstração e sem depoimentos de pessoas reais.
 - Tema claro, escuro ou automático (segue o sistema), com alternância suave e preferência salva neste navegador.
 - Notificações flutuantes (toasts) que não empurram o conteúdo.
 - Rotas por hash: `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); o botão voltar do navegador funciona entre as telas.
@@ -44,21 +45,35 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
 ## Estrutura
 
 ```text
+.gitattributes  Normalização de finais de linha LF
+.gitignore      Exclusão de dependências e resultados E2E gerados
+.prettierignore Exclusões do formatador
+.vscode/
+  settings.json Configuração legada de testes Python no VS Code, não usada pelo projeto JS
+assets/
+  banner-solidariedade.jpg       Imagem de banner
+  Logo Nexus Social em Gradiente Tecnológico.png  Logo em PNG
+  nexus-social-logo.jpg          Logo em JPEG
+editorial.css   Estilos visuais complementares para cartões e seções editoriais
+eslint.config.js Configuração flat do ESLint
 index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
 JavaScript/
-  script.js     Ponto de entrada da aplicação
   application.js Inicialização, roteamento e composição das telas
-  storage.js    Persistência, validação, versão do esquema e migração
-  requests.js   Modelo, validação de entrada e regras de negócio
+  backup.js      Exportação JSON e criação de solicitações de exemplo
+  categories.js  Apresentação e identidade visual das categorias
+  community.js  Renderização das histórias fictícias do painel
   dashboard.js  Indicadores e seleção das solicitações recentes
-  router.js     Navegação por hash
-  theme.js      Preferência de tema
-  icons.js      Criação e hidratação de ícones SVG
-  toast.js      Notificações da interface
-  backup.js     Exportação e exemplos locais
   demo-data.js  Dados fictícios opcionais
+  icons.js      Criação e hidratação de ícones SVG
   queries.js    Consultas puras de pesquisa, filtros e ordenação
+  requests.js   Modelo, validação de entrada e regras de negócio
+  router.js     Navegação por hash
+  script.js     Ponto de entrada mínimo da aplicação
+  storage.js    Persistência, validação, versão do esquema e migração
+  support.js    Cópia não utilizada do harness E2E; não importada pela aplicação ou pela suíte atual
+  theme.js      Preferência de tema
+  toast.js      Notificações da interface
   views/
     panel-view.js        Renderização e eventos do painel
     requests-view.js     Renderização e eventos da lista de solicitações
@@ -66,16 +81,25 @@ JavaScript/
     details-view.js      Renderização e eventos dos detalhes
     history-view.js      Renderização e eventos do histórico
     view-utils.js        Elementos e formatação compartilhados com texto seguro
-tests/          Testes automatizados unitários e de integração
-tests/e2e/      Testes de ponta a ponta com Playwright
-eslint.config.js Configuração flat do ESLint
-.prettierignore Exclusões do formatador
-package.json    Tipo de módulo ES e comando para executar os testes
-package-lock.json Versões reproduzíveis das dependências de desenvolvimento
-README.md       Documentação do projeto
+tests/
+  support.js               Armazenamento isolado e dados reutilizáveis
+  requests.test.js         Testes das validações e regras de negócio
+  storage.test.js          Testes de persistência e migração
+  queries-dashboard.test.js Testes das consultas e indicadores
+  e2e/
+    support.js             Servidor local, navegador e helpers E2E
+    app.test.js            Cenários E2E dos fluxos da interface
+    server.test.js         Testes de acesso, segurança e MIME do servidor E2E
 FASE-6-RELATORIO.md Registro dos testes e resultados da Fase 6
 FASE-7-RELATORIO.md Registro da automação de interface e dos resultados da Fase 7
+FASE-8-RELATORIO.md Registro da refatoração e qualidade da Fase 8
+FASE-8-1-RELATORIO.md Registro dos ajustes de consolidação da Fase 8.1
+package.json    Tipo de módulo ES, scripts e dependências de desenvolvimento
+package-lock.json Versões reproduzíveis das dependências de desenvolvimento
+README.md       Documentação do projeto
 ```
+
+Não há uma pasta `docs/` neste estado do repositório; os documentos de fase ficam na raiz.
 
 ## Executar localmente
 
@@ -138,7 +162,7 @@ Para aplicar Prettier aos arquivos suportados do projeto:
 npm run format
 ```
 
-O servidor E2E escuta somente em `127.0.0.1` numa porta efêmera e serve apenas os arquivos da aplicação. Cada caso cria um contexto Playwright novo, com `localStorage` isolado e descartado ao fechar; nenhum perfil habitual ou dado persistido do usuário é usado. Em falhas E2E, capturas de tela são gravadas em `test-results/` (diretório ignorado pelo Git); os diagnósticos de console, erros JavaScript, requisições falhas e respostas HTTP de erro aparecem na saída do runner.
+O servidor E2E escuta somente em `127.0.0.1` numa porta efêmera e atende arquivos de `index.html`, `style.css`, `editorial.css`, `JavaScript/` e `assets/`, sem lista de módulos individuais. Ele restringe caminhos à raiz permitida, bloqueia arquivos ocultos e áreas de teste/dependências, e aceita somente `GET` e `HEAD`. Cada caso cria um contexto Playwright novo, com `localStorage` isolado e descartado ao fechar; nenhum perfil habitual ou dado persistido do usuário é usado. Em falhas E2E, capturas de tela são gravadas em `test-results/` (diretório ignorado pelo Git); os diagnósticos de console, erros JavaScript, requisições falhas e respostas HTTP de erro aparecem na saída do runner.
 
 Categorias cobertas:
 
@@ -146,8 +170,9 @@ Categorias cobertas:
 - **Integração:** armazenamento versionado, migração com backup, operações de status, histórico e falhas de gravação sem atualização parcial.
 - **Regressão:** preservação de dados corrompidos/incompatíveis, separação entre conclusão e recebimento, bloqueio de transições indevidas e ausência de mutação dos dados na consulta.
 - **Interface E2E:** inicialização, navegação, formulários e persistência, busca/filtros, transições pelo UI, histórico/detalhes, texto HTML literal, erros de navegador, menu por teclado e larguras 320, 360, 390, 768 e 1280 px.
+- **Servidor E2E:** acesso a módulos criados sob demanda, bloqueio de traversal/arquivos privados, métodos HTTP permitidos e MIME JavaScript.
 
-Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md) e [Fase 7](./FASE-7-RELATORIO.md) para os resultados efetivamente executados.
+Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md) e [Fase 8.1](./FASE-8-1-RELATORIO.md) para resultados e decisões efetivamente registrados.
 
 ## Persistência local
 
@@ -216,4 +241,4 @@ Esses itens são possibilidades futuras, não funcionalidades incluídas no MVP.
 
 ## Validação
 
-A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md) e [Fase 7](./FASE-7-RELATORIO.md) para resultados efetivamente executados e limitações.
+A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md) e [Fase 8.1](./FASE-8-1-RELATORIO.md) para resultados efetivamente executados e limitações.

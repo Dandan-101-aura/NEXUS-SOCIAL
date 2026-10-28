@@ -103,3 +103,11 @@ O primeiro `npm run test:all`, antes de `npm ci`, não conseguiu carregar Playwr
 - Os seis cenários E2E exercitam a interface em Chromium; não constituem validação em outros motores, dispositivos físicos ou auditoria completa de acessibilidade.
 - O projeto continua sendo uma demonstração local com `localStorage`, sem backend, sincronização ou autenticação real.
 - O projeto não está num repositório Git acessível neste ambiente, limitando a revisão por diff.
+
+## Esclarecimento (Fase 8.1)
+
+O repositório Git está acessível nesta fase. O histórico disponível contém o snapshot marcado `fase-8` (`a7a17a9`) e, depois dele, apenas o commit de normalização de finais de linha (`fcc919d`); não há uma versão anterior à Fase 8 que permita reconstruir o servidor E2E ou reproduzir a linha de base. Portanto, a causa da falha inicial de 0/6 não pode ser verificada independentemente. Este relatório registrou à época que o servidor com lista fixa não servia módulos importados após a refatoração, explicação compatível com o problema descrito, mas a afirmação de que seria uma falha “já presente na linha de base” não é sustentada pelo histórico disponível e não deve ser interpretada como fato comprovado. Também fica corrigida a afirmação acima de que não havia repositório Git acessível.
+
+Na implementação atual, o servidor E2E serve módulos novos dentro das raízes permitidas sem manter uma entrada para cada arquivo. O mapa anterior não está disponível para comparação, então não é possível determinar se a falha de 0/6 decorreu exclusivamente da refatoração ou de um defeito anterior.
+
+A alteração dos indicadores foi feita para atribuir o valor final diretamente quando o painel está oculto; quando visível, a animação continua usando `requestAnimationFrame` (duração padrão de 700 ms). O cenário E2E de cadastro e recarga consulta o texto do indicador imediatamente, sem espera ou temporização explícita. Nesse cenário o painel permanece oculto, então o teste verifica o valor final síncrono e não depende da duração da animação. Antes desse ajuste, a leitura imediata podia observar um valor intermediário.

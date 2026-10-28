@@ -1,106 +1,27 @@
 import { createReadStream } from "node:fs";
-import { access, mkdir } from "node:fs/promises";
+import { access, mkdir, realpath, stat } from "node:fs/promises";
 import { createServer } from "node:http";
-import { join, resolve } from "node:path";
+import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { after, before } from "node:test";
 import { chromium } from "playwright";
 
 const PROJECT_ROOT = resolve(import.meta.dirname, "../..");
 const FAILURE_ARTIFACTS = join(PROJECT_ROOT, "test-results");
-const STATIC_FILES = new Map([
-  ["/", ["index.html", "text/html; charset=utf-8"]],
-  ["/index.html", ["index.html", "text/html; charset=utf-8"]],
-  ["/favicon.ico", [null, null]],
-  ["/style.css", ["style.css", "text/css; charset=utf-8"]],
-  ["/editorial.css", ["editorial.css", "text/css; charset=utf-8"]],
-  [
-    "/assets/banner-solidariedade.jpg",
-    ["assets/banner-solidariedade.jpg", "image/jpeg"],
-  ],
-  [
-    "/assets/nexus-social-logo.jpg",
-    ["assets/nexus-social-logo.jpg", "image/jpeg"],
-  ],
-  [
-    "/JavaScript/queries.js",
-    ["JavaScript/queries.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/application.js",
-    ["JavaScript/application.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/script.js",
-    ["JavaScript/script.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/storage.js",
-    ["JavaScript/storage.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/requests.js",
-    ["JavaScript/requests.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/dashboard.js",
-    ["JavaScript/dashboard.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/icons.js",
-    ["JavaScript/icons.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/toast.js",
-    ["JavaScript/toast.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/theme.js",
-    ["JavaScript/theme.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/router.js",
-    ["JavaScript/router.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/backup.js",
-    ["JavaScript/backup.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/demo-data.js",
-    ["JavaScript/demo-data.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/categories.js",
-    ["JavaScript/categories.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/community.js",
-    ["JavaScript/community.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/view-utils.js",
-    ["JavaScript/views/view-utils.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/panel-view.js",
-    ["JavaScript/views/panel-view.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/requests-view.js",
-    ["JavaScript/views/requests-view.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/request-form-view.js",
-    ["JavaScript/views/request-form-view.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/details-view.js",
-    ["JavaScript/views/details-view.js", "text/javascript; charset=utf-8"],
-  ],
-  [
-    "/JavaScript/views/history-view.js",
-    ["JavaScript/views/history-view.js", "text/javascript; charset=utf-8"],
-  ],
+const APPLICATION_ROOTS = new Set(["JavaScript", "assets"]);
+const APPLICATION_FILES = new Set(["index.html", "style.css", "editorial.css"]);
+const BLOCKED_SEGMENTS = new Set(["tests", "node_modules", "test-results"]);
+const BLOCKED_FILES = new Set(["JavaScript/support.js"]);
+const CONTENT_TYPES = new Map([
+  [".html", "text/html; charset=utf-8"],
+  [".js", "text/javascript; charset=utf-8"],
+  [".css", "text/css; charset=utf-8"],
+  [".json", "application/json; charset=utf-8"],
+  [".svg", "image/svg+xml"],
+  [".webmanifest", "application/manifest+json"],
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".webp", "image/webp"],
 ]);
 const SYSTEM_BROWSER_PATHS = [
   process.env.NEXUS_BROWSER_PATH,
@@ -144,27 +65,143 @@ function closeServer(serverInstance) {
   });
 }
 
-before(async () => {
-  server = createServer((request, response) => {
-    const pathname = new URL(request.url, "http://127.0.0.1").pathname;
-    const file = STATIC_FILES.get(pathname);
-    if (!file) {
+function isWithinDirectory(directory, filePath) {
+  const pathFromDirectory = relative(directory, filePath);
+  return (
+    pathFromDirectory === "" ||
+    (pathFromDirectory !== ".." &&
+      !pathFromDirectory.startsWith(`..${sep}`) &&
+      !isAbsolute(pathFromDirectory))
+  );
+}
+
+function resolveApplicationPath(pathname) {
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(pathname).replace(/\\/g, "/");
+  } catch {
+    return null;
+  }
+
+  if (decodedPath === "/") {
+    decodedPath = "/index.html";
+  }
+  if (!decodedPath.startsWith("/")) {
+    return null;
+  }
+
+  const segments = decodedPath.slice(1).split("/");
+  if (
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        segment.startsWith(".") ||
+        BLOCKED_SEGMENTS.has(segment.toLowerCase()),
+    )
+  ) {
+    return null;
+  }
+  if (BLOCKED_FILES.has(segments.join("/"))) {
+    return null;
+  }
+
+  let allowedRoot;
+  let filePath;
+  if (segments.length === 1 && APPLICATION_FILES.has(segments[0])) {
+    allowedRoot = PROJECT_ROOT;
+    filePath = resolve(PROJECT_ROOT, segments[0]);
+  } else if (APPLICATION_ROOTS.has(segments[0]) && segments.length > 1) {
+    allowedRoot = resolve(PROJECT_ROOT, segments[0]);
+    filePath = resolve(allowedRoot, ...segments.slice(1));
+  } else {
+    return null;
+  }
+
+  if (!isWithinDirectory(allowedRoot, filePath)) {
+    return null;
+  }
+  return { allowedRoot, filePath };
+}
+
+async function serveApplicationFile(request, response) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    response.writeHead(405, { Allow: "GET, HEAD" }).end("Method not allowed");
+    return;
+  }
+
+  let pathname;
+  try {
+    pathname = new URL(request.url, "http://127.0.0.1").pathname;
+  } catch {
+    response.writeHead(404).end("Not found");
+    return;
+  }
+
+  if (pathname === "/favicon.ico") {
+    response.writeHead(204).end();
+    return;
+  }
+
+  const resolvedPath = resolveApplicationPath(pathname);
+  if (!resolvedPath) {
+    response.writeHead(404).end("Not found");
+    return;
+  }
+
+  try {
+    const [realRoot, realFile] = await Promise.all([
+      realpath(resolvedPath.allowedRoot),
+      realpath(resolvedPath.filePath),
+    ]);
+    if (!isWithinDirectory(realRoot, realFile)) {
+      response.writeHead(403).end("Forbidden");
+      return;
+    }
+
+    const fileStat = await stat(realFile);
+    if (!fileStat.isFile()) {
       response.writeHead(404).end("Not found");
       return;
     }
 
-    if (file[0] === null) {
-      response.writeHead(204).end();
+    const contentType =
+      CONTENT_TYPES.get(extname(realFile).toLowerCase()) ??
+      "application/octet-stream";
+    response.writeHead(200, {
+      "Content-Length": fileStat.size,
+      "Content-Type": contentType,
+    });
+    if (request.method === "HEAD") {
+      response.end();
       return;
     }
 
-    response.setHeader("Content-Type", file[1]);
-    createReadStream(join(PROJECT_ROOT, file[0]))
-      .on("error", () =>
-        response.writeHead(500).end("Unable to serve app file"),
-      )
+    createReadStream(realFile)
+      .on("error", (error) => {
+        console.error("Unable to stream application file:", error);
+        if (!response.headersSent) {
+          response.writeHead(500).end("Unable to serve app file");
+        } else {
+          response.destroy(error);
+        }
+      })
       .pipe(response);
-  });
+  } catch (error) {
+    if (error.code === "ENOENT" || error.code === "ENOTDIR") {
+      response.writeHead(404).end("Not found");
+      return;
+    }
+    console.error("Unable to resolve application file:", error);
+    response.writeHead(500).end("Unable to serve app file");
+  }
+}
+
+before(async () => {
+  server = createServer((request, response) =>
+    serveApplicationFile(request, response),
+  );
   const address = await listen(server);
   baseUrl = `http://127.0.0.1:${address.port}`;
 
@@ -181,6 +218,10 @@ after(async () => {
     await closeServer(server);
   }
 });
+
+export function getServerBaseUrl() {
+  return baseUrl;
+}
 
 export async function openApp(t, viewport = { width: 1280, height: 900 }) {
   const context = await browser.newContext({ viewport });
