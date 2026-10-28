@@ -1,7 +1,10 @@
 .public-home {
   min-height: 100vh;
   padding: 0 clamp(20px, 5vw, 72px) 28px;
-  background: var(--bg);
+  background-color: transparent;
+  background-image:
+    radial-gradient(56rem 38rem at 96% 0%, var(--glow-1), transparent 64%),
+    radial-gradient(42rem 28rem at 0% 82%, var(--glow-2), transparent 66%);
   color: var(--text);
 }
 
