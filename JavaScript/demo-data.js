@@ -1,0 +1,211 @@
+import { DEMO_PROFILES } from "./requests.js";
+
+const requester = DEMO_PROFILES.requester;
+const volunteer = DEMO_PROFILES.volunteer;
+const moderator = DEMO_PROFILES.moderator;
+
+function entry({
+  id,
+  requestId,
+  timestamp,
+  previousStatus,
+  newStatus,
+  actionType,
+  role,
+  actorId,
+  description,
+  reason = null,
+}) {
+  return {
+    id,
+    requestId,
+    timestamp,
+    previousStatus,
+    newStatus,
+    actionType,
+    role,
+    actorId,
+    description,
+    reason,
+  };
+}
+
+export function buildDemoRequests() {
+  const openId = "demo-req-alimentos-aberta";
+  const assignedId = "demo-req-higiene-andamento";
+  const completedId = "demo-req-roupas-conclusao";
+
+  return [
+    {
+      id: openId,
+      title: "Cesta básica para a semana",
+      description:
+        "Arroz, feijão, óleo e leite em pó para complementar a alimentação familiar nesta demonstração.",
+      category: "Alimentos não perecíveis",
+      quantity: 2.5,
+      unit: "caixas",
+      region: "Centro",
+      declaredUrgency: "alta",
+      requesterId: requester.id,
+      status: "aberto",
+      createdAt: "2026-10-18T11:00:00.000Z",
+      updatedAt: "2026-10-18T11:00:00.000Z",
+      assignedVolunteerId: null,
+      completedAt: null,
+      receiptConfirmedAt: null,
+      history: [
+        entry({
+          id: "demo-hist-open-1",
+          requestId: openId,
+          timestamp: "2026-10-18T11:00:00.000Z",
+          previousStatus: null,
+          newStatus: "aberto",
+          actionType: "solicitacao_criada",
+          role: requester.role,
+          actorId: requester.id,
+          description: "Solicitação cadastrada.",
+        }),
+      ],
+    },
+    {
+      id: assignedId,
+      title: "Kit de higiene pessoal",
+      description:
+        "Sabonete, pasta de dente e absorventes para uso cotidiano, sem dados pessoais.",
+      category: "Produtos de higiene",
+      quantity: 6,
+      unit: "pacotes",
+      region: "Zona Norte",
+      declaredUrgency: "media",
+      requesterId: requester.id,
+      status: "em_atendimento",
+      createdAt: "2026-10-17T09:30:00.000Z",
+      updatedAt: "2026-10-19T14:10:00.000Z",
+      assignedVolunteerId: volunteer.id,
+      completedAt: null,
+      receiptConfirmedAt: null,
+      history: [
+        entry({
+          id: "demo-hist-hygiene-1",
+          requestId: assignedId,
+          timestamp: "2026-10-17T09:30:00.000Z",
+          previousStatus: null,
+          newStatus: "aberto",
+          actionType: "solicitacao_criada",
+          role: requester.role,
+          actorId: requester.id,
+          description: "Solicitação cadastrada.",
+        }),
+        entry({
+          id: "demo-hist-hygiene-2",
+          requestId: assignedId,
+          timestamp: "2026-10-19T14:10:00.000Z",
+          previousStatus: "aberto",
+          newStatus: "em_atendimento",
+          actionType: "voluntario_atribuido",
+          role: volunteer.role,
+          actorId: volunteer.id,
+          description: "Voluntário assumiu o atendimento.",
+        }),
+      ],
+    },
+    {
+      id: completedId,
+      title: "Agasalhos infantis",
+      description:
+        "Casacos e calças para crianças, em tamanho variado, apenas para esta demonstração.",
+      category: "Roupas",
+      quantity: 8,
+      unit: "peças",
+      region: "Zona Sul",
+      declaredUrgency: "baixa",
+      requesterId: requester.id,
+      status: "conclusao_declarada",
+      createdAt: "2026-10-15T16:45:00.000Z",
+      updatedAt: "2026-10-20T10:05:00.000Z",
+      assignedVolunteerId: volunteer.id,
+      completedAt: "2026-10-20T10:05:00.000Z",
+      receiptConfirmedAt: null,
+      history: [
+        entry({
+          id: "demo-hist-clothes-1",
+          requestId: completedId,
+          timestamp: "2026-10-15T16:45:00.000Z",
+          previousStatus: null,
+          newStatus: "aberto",
+          actionType: "solicitacao_criada",
+          role: requester.role,
+          actorId: requester.id,
+          description: "Solicitação cadastrada.",
+        }),
+        entry({
+          id: "demo-hist-clothes-2",
+          requestId: completedId,
+          timestamp: "2026-10-16T08:20:00.000Z",
+          previousStatus: "aberto",
+          newStatus: "em_atendimento",
+          actionType: "voluntario_atribuido",
+          role: volunteer.role,
+          actorId: volunteer.id,
+          description: "Voluntário assumiu o atendimento.",
+        }),
+        entry({
+          id: "demo-hist-clothes-3",
+          requestId: completedId,
+          timestamp: "2026-10-20T10:05:00.000Z",
+          previousStatus: "em_atendimento",
+          newStatus: "conclusao_declarada",
+          actionType: "conclusao_declarada",
+          role: volunteer.role,
+          actorId: volunteer.id,
+          description:
+            "Voluntário declarou o atendimento concluído. O recebimento ainda não foi confirmado.",
+        }),
+      ],
+    },
+    {
+      id: "demo-req-itens-cancelada",
+      title: "Utensílios básicos de cozinha",
+      description:
+        "Panelas e talheres para uso cotidiano. Registro cancelado apenas para demonstrar o histórico.",
+      category: "Itens básicos de uso cotidiano",
+      quantity: 1,
+      unit: "caixas",
+      region: "Bairro Industrial",
+      declaredUrgency: "media",
+      requesterId: requester.id,
+      status: "cancelado",
+      createdAt: "2026-10-14T13:00:00.000Z",
+      updatedAt: "2026-10-14T18:40:00.000Z",
+      assignedVolunteerId: null,
+      completedAt: null,
+      receiptConfirmedAt: null,
+      cancellationReason: "Pedido duplicado na demonstração.",
+      history: [
+        entry({
+          id: "demo-hist-cancel-1",
+          requestId: "demo-req-itens-cancelada",
+          timestamp: "2026-10-14T13:00:00.000Z",
+          previousStatus: null,
+          newStatus: "aberto",
+          actionType: "solicitacao_criada",
+          role: requester.role,
+          actorId: requester.id,
+          description: "Solicitação cadastrada.",
+        }),
+        entry({
+          id: "demo-hist-cancel-2",
+          requestId: "demo-req-itens-cancelada",
+          timestamp: "2026-10-14T18:40:00.000Z",
+          previousStatus: "aberto",
+          newStatus: "cancelado",
+          actionType: "solicitacao_cancelada",
+          role: moderator.role,
+          actorId: moderator.id,
+          description: "Solicitação cancelada.",
+          reason: "Pedido duplicado na demonstração.",
+        }),
+      ],
+    },
+  ];
+}

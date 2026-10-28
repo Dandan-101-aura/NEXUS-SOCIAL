@@ -1,0 +1,583 @@
+/* =========================================================================
+   NEXUS SOCIAL — camada editorial
+   Carregado DEPOIS de style.css. Troca o ar de "painel de tecnologia" por um
+   caderno de comunidade: papel quente, tipografia com serifa, selos e etiquetas.
+
+   Para desfazer tudo: remova o <link> deste arquivo no index.html.
+
+   Índice
+   1. Papel e paleta          5. Selo de status
+   2. Tipografia editorial   6. Indicadores com números em destaque
+   3. Hero                   7. Histórias de impacto
+   4. Faixa de categoria     8. Responsivo
+   ========================================================================= */
+
+/* ---------- 1. Papel e paleta ---------- */
+
+:root {
+  --font-serif:
+    "Fraunces", "Iowan Old Style", Georgia, "Times New Roman", serif;
+
+  /* Papel limpo, moderno e nítido: slate suave, superfícies brancas e esmeralda. */
+  --bg: #f1f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --muted: #475569;
+  --glass: rgb(255 255 255 / 85%);
+  --glow-1: rgb(0 190 224 / 10%);
+  --glow-2: rgb(20 220 168 / 8%);
+
+  /* Cores das faixas de categoria limpas e harmoniosas */
+  --cat-alimentos-bg: #e4f7fb;
+  --cat-alimentos-fg: #0789a8;
+  --cat-roupas-bg: #e8f4fa;
+  --cat-roupas-fg: #087da8;
+  --cat-higiene-bg: #e6f8f7;
+  --cat-higiene-fg: #067b86;
+  --cat-abrigo-bg: #fefce8;
+  --cat-abrigo-fg: #854d0e;
+}
+
+:root[data-theme="dark"] {
+  --bg: #06101d;
+  --surface: #0b1b2d;
+  --surface-2: #12283b;
+  --border: #20374a;
+  --border-strong: #31586c;
+  --text: #e3f2f8;
+  --muted: #a0bac8;
+  --glass: rgb(11 27 45 / 82%);
+  --glow-1: rgb(0 190 224 / 11%);
+  --glow-2: rgb(20 220 168 / 9%);
+
+  --cat-alimentos-bg: #3a2f14;
+  --cat-alimentos-fg: #f2d58a;
+  --cat-roupas-bg: #3d2119;
+  --cat-roupas-fg: #f4b9a6;
+  --cat-higiene-bg: #123639;
+  --cat-higiene-fg: #9fdde2;
+  --cat-abrigo-bg: #14342a;
+  --cat-abrigo-fg: #a6e3c5;
+}
+
+/* Botões mais "pílula": formas arredondadas passam acolhimento. */
+.button,
+.icon-button,
+.menu-toggle {
+  border-radius: 999px;
+}
+
+/* ---------- 2. Tipografia editorial ---------- */
+
+h1,
+.section-heading h2,
+.request-group-title,
+.empty-state h2,
+.empty-state h3,
+.form-card h2,
+.action-dialog h2 {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 3.6vw, 2.7rem);
+  line-height: 1.08;
+}
+
+.request-card-heading :is(h2, h3) {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Régua de jornal: um traço grosso e um fino marcam o começo de cada seção. */
+.section-heading {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.eyebrow,
+.sidebar-caption {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Citação em destaque */
+.pull-quote {
+  max-width: 760px;
+  margin: 40px 0 6px;
+  padding: 4px 0 4px 22px;
+  border-left: 4px solid var(--primary);
+}
+
+.pull-quote blockquote {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.pull-quote figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Os filtros cortavam o texto dos selects ("Todas as categor…"): damos mais largura a eles. */
+@media (min-width: 901px) {
+  .filter-panel {
+    grid-template-columns:
+      minmax(150px, 1.3fr) repeat(3, minmax(170px, 1fr))
+      auto;
+  }
+}
+
+/* ---------- 3. Hero ---------- */
+
+.welcome-card {
+  min-height: 300px;
+  border-radius: 22px;
+}
+
+/* Degradê esmeralda → slate: o texto fica sobre a parte escura, o rosto das pessoas sobre a clara. */
+.welcome-overlay {
+  background:
+    linear-gradient(180deg, rgb(15 23 42 / 0%) 55%, rgb(15 23 42 / 62%) 100%),
+    linear-gradient(
+      90deg,
+      rgb(6 16 29 / 96%) 0%,
+      rgb(5 88 116 / 88%) 42%,
+      rgb(0 190 224 / 35%) 78%,
+      rgb(6 16 29 / 22%) 100%
+    );
+}
+
+:root[data-theme="dark"] .welcome-overlay {
+  background:
+    linear-gradient(180deg, rgb(2 6 23 / 0%) 50%, rgb(2 6 23 / 72%) 100%),
+    linear-gradient(
+      90deg,
+      rgb(6 16 29 / 97%) 0%,
+      rgb(5 88 116 / 90%) 44%,
+      rgb(0 190 224 / 38%) 80%,
+      rgb(6 16 29 / 30%) 100%
+    );
+}
+
+.welcome-copy h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.welcome-copy h2 em {
+  color: #77e9e3;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.welcome-copy p {
+  max-width: 440px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.welcome-kicker {
+  text-transform: uppercase;
+}
+
+.welcome-photo-credit {
+  position: absolute;
+  z-index: 2;
+  right: 18px;
+  bottom: 10px;
+  margin: 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+}
+
+/* ---------- 4. Faixa de categoria nos cartões ---------- */
+
+.request-card {
+  overflow: hidden;
+  padding-top: 0;
+  border-radius: 14px;
+}
+
+.card-ribbon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 -20px 16px;
+  padding: 9px 20px;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--cat-fg) 22%, transparent);
+  background-color: var(--cat-bg);
+  color: var(--cat-fg);
+}
+
+/* Textura sutil por categoria. Fica atrás do texto (z-index negativo no ::before). */
+.card-ribbon::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--cat-pattern);
+  content: "";
+  opacity: 0.22;
+}
+
+.card-ribbon > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card-ribbon-icon {
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+}
+
+.card-ribbon-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cat-alimentos {
+  --cat-bg: var(--cat-alimentos-bg);
+  --cat-fg: var(--cat-alimentos-fg);
+  /* pontinhos, como grãos */
+  --cat-pattern: radial-gradient(
+    circle at 3px 3px,
+    currentColor 1.2px,
+    transparent 1.6px
+  );
+}
+
+.cat-roupas {
+  --cat-bg: var(--cat-roupas-bg);
+  --cat-fg: var(--cat-roupas-fg);
+  /* listras diagonais, como tecido */
+  --cat-pattern: repeating-linear-gradient(
+    135deg,
+    currentColor 0 1.5px,
+    transparent 1.5px 9px
+  );
+}
+
+.cat-higiene {
+  --cat-bg: var(--cat-higiene-bg);
+  --cat-fg: var(--cat-higiene-fg);
+  /* círculos, como bolhas */
+  --cat-pattern: radial-gradient(
+    circle at 10px 10px,
+    transparent 5px,
+    currentColor 5.5px,
+    transparent 6.5px
+  );
+}
+
+.cat-abrigo {
+  --cat-bg: var(--cat-abrigo-bg);
+  --cat-fg: var(--cat-abrigo-fg);
+  /* quadriculado, como telhas */
+  --cat-pattern:
+    linear-gradient(currentColor 1px, transparent 1px),
+    linear-gradient(90deg, currentColor 1px, transparent 1px);
+}
+
+.cat-abrigo::before {
+  background-size: 12px 12px;
+}
+
+.cat-alimentos::before {
+  background-size: 10px 10px;
+}
+
+.cat-higiene::before {
+  background-size: 20px 20px;
+}
+
+/* A barra de urgência do cartão fica colada na base, sem margem sobrando. */
+.request-card .urgency-bar {
+  margin-top: 18px;
+}
+
+/* ---------- 5. Selo de status (etiqueta costurada) ---------- */
+
+.status-badge {
+  --stamp: var(--ok-fg);
+  --stamp-bg: var(--ok-bg);
+  position: relative;
+  max-width: 12.5rem;
+  gap: 0;
+  padding: 5px 12px;
+  border: 1px solid var(--stamp);
+  border-radius: 999px;
+  background: var(--stamp-bg);
+  color: var(--stamp);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Costura: um tracejado por dentro da borda, como um ponto de linha. */
+.status-badge::before {
+  position: absolute;
+  inset: 2px;
+  width: auto;
+  height: auto;
+  border: 1px dashed var(--stamp);
+  border-radius: 4px;
+  background: transparent;
+  content: "";
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.status-em_atendimento {
+  --stamp: var(--warn-fg);
+  --stamp-bg: var(--warn-bg);
+}
+
+.status-conclusao_declarada,
+.status-recebimento_confirmado {
+  --stamp: var(--info-fg);
+  --stamp-bg: var(--info-bg);
+}
+
+.status-cancelado,
+.status-suspenso_para_revisao {
+  --stamp: var(--danger-fg);
+  --stamp-bg: var(--danger-bg);
+}
+
+/* ---------- 6. Indicadores com números em destaque ---------- */
+
+.stat-card {
+  padding: 20px 20px 18px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+}
+
+.stat-value {
+  margin-top: 8px;
+  font-family: var(--font-serif);
+  font-size: clamp(2.6rem, 4.4vw, 3.4rem);
+  font-variant-numeric: lining-nums;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.stat-card h3 {
+  font-size: 0.82rem;
+}
+
+/* ---------- 7. Histórias de impacto ---------- */
+
+.community {
+  margin-top: 40px;
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.story-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  margin: 0;
+  padding: 26px 22px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  transition:
+    transform 240ms var(--ease),
+    box-shadow 240ms ease;
+}
+
+.story-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.story-mark {
+  position: absolute;
+  top: -14px;
+  left: 18px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 0.95rem;
+}
+
+.story-quote {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.story-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-strong);
+}
+
+.story-avatar {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--avatar-ring, var(--primary));
+  background: var(--avatar-bg, var(--primary));
+  color: var(--avatar-fg, #fff);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.story-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tone-emerald {
+  --avatar-bg: #0f6b4f;
+  --avatar-ring: #34d399;
+}
+
+.tone-amber {
+  --avatar-bg: #8a5a0e;
+  --avatar-ring: #f0b44c;
+}
+
+.tone-clay {
+  --avatar-bg: #93402a;
+  --avatar-ring: #eba08a;
+}
+
+.story-who {
+  display: grid;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.story-who strong {
+  font-size: 0.92rem;
+}
+
+.story-who span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.community-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* ---------- 8. Responsivo ---------- */
+
+@media (max-width: 900px) {
+  .story-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .story-card:nth-child(odd),
+  .story-card:nth-child(even) {
+    transform: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .card-ribbon {
+    margin-right: -16px;
+    margin-left: -16px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .request-card-heading {
+    flex-wrap: wrap;
+  }
+
+  .status-badge {
+    max-width: 100%;
+  }
+
+  .welcome-photo-credit {
+    right: 14px;
+  }
+
+  .pull-quote {
+    margin-top: 30px;
+  }
+}
+
+/* Quem prefere menos movimento não vê inclinações nem animações extras. */
+@media (prefers-reduced-motion: reduce) {
+  .status-badge,
+  .story-card:nth-child(odd),
+  .story-card:nth-child(even),
+  .story-card:hover {
+    transform: none;
+  }
+}
