@@ -341,9 +341,9 @@
                 <p class="eyebrow">DADOS LOCAIS</p>
                 <h2 id="data-tools-title">Backup e exemplos</h2>
                 <p class="data-tools-text">
-                  O backup baixa uma cópia das solicitações em um arquivo JSON.
-                  Os exemplos acrescentam solicitações fictícias sem alterar nem
-                  apagar as que já existem.
+                  Exporte uma cópia JSON ou importe solicitações de forma
+                  aditiva. A importação não altera nem apaga dados existentes.
+                  Os exemplos também são acrescentados sem substituir registros.
                 </p>
               </div>
               <div class="data-tools-actions">
@@ -355,6 +355,21 @@
                   <span class="btn-icon" data-icon="download"></span> Exportar
                   backup (JSON)
                 </button>
+                <button
+                  class="button button-secondary"
+                  id="import-backup"
+                  type="button"
+                >
+                  <span class="btn-icon" data-icon="file-text"></span> Importar
+                  backup (JSON)
+                </button>
+                <input
+                  id="import-backup-file"
+                  type="file"
+                  accept=".json,application/json"
+                  aria-label="Selecionar arquivo de backup JSON"
+                  hidden
+                />
                 <button
                   class="button button-secondary"
                   id="load-samples"
@@ -735,6 +750,62 @@
           </button>
         </div>
       </form>
+    </dialog>
+
+    <dialog
+      class="action-dialog import-dialog"
+      id="import-dialog"
+      aria-labelledby="import-dialog-title"
+      aria-describedby="import-dialog-description"
+    >
+      <div>
+        <h2 id="import-dialog-title">Pré-visualizar importação</h2>
+        <p id="import-dialog-description">
+          Serão adicionadas apenas solicitações válidas que ainda não existam.
+          Os registros atuais não serão substituídos nem removidos.
+        </p>
+        <div
+          class="import-preview"
+          id="import-preview"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <p id="import-preview-summary"></p>
+          <p
+            class="dialog-error"
+            id="import-preview-error"
+            role="alert"
+            hidden
+          ></p>
+          <ul
+            class="import-preview-list"
+            id="import-preview-invalid"
+            aria-label="Solicitações inválidas"
+          ></ul>
+          <ul
+            class="import-preview-list"
+            id="import-preview-warnings"
+            aria-label="Avisos da importação"
+          ></ul>
+        </div>
+        <div class="dialog-actions">
+          <button
+            class="button button-secondary"
+            type="button"
+            id="import-dialog-cancel"
+          >
+            Cancelar
+          </button>
+          <button
+            class="button button-primary"
+            type="button"
+            id="import-dialog-confirm"
+            disabled
+          >
+            Confirmar importação
+          </button>
+        </div>
+      </div>
     </dialog>
   </body>
 </html>

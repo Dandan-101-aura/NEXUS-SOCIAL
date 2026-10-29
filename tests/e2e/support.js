@@ -219,7 +219,7 @@ export function getServerBaseUrl() {
 }
 
 export async function openApp(t, viewport = { width: 1280, height: 900 }) {
-  const context = await browser.newContext({ viewport });
+  const context = await browser.newContext({ viewport, acceptDownloads: true });
   const page = await context.newPage();
   const diagnostics = {
     consoleErrors: [],

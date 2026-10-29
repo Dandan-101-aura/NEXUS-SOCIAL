@@ -10,6 +10,7 @@ import {
   withdrawFromRequest,
 } from "./requests.js";
 import {
+  importRequests,
   loadRequests,
   saveRequests,
   STORAGE_KEY,
@@ -20,7 +21,12 @@ import { renderCommunityStories } from "./community.js";
 import { dismissToast, showToast } from "./toast.js";
 import { initTheme } from "./theme.js";
 import { navigateTo, startRouter } from "./router.js";
-import { buildSampleRequests, downloadBackup } from "./backup.js";
+import {
+  buildSampleRequests,
+  downloadBackup,
+  MAX_BACKUP_SIZE_BYTES,
+  parseBackup,
+} from "./backup.js";
 import { bindDetailsView, renderDetailsView } from "./views/details-view.js";
 import { bindHistoryView, renderHistoryView } from "./views/history-view.js";
 import { bindPanelView, renderPanelView } from "./views/panel-view.js";
@@ -48,6 +54,17 @@ const actionReasonField = document.querySelector("#action-reason-field");
 const actionReason = document.querySelector("#action-reason");
 const actionReasonError = document.querySelector("#action-reason-error");
 const exportButton = document.querySelector("#export-backup");
+const importButton = document.querySelector("#import-backup");
+const importFileInput = document.querySelector("#import-backup-file");
+const importDialog = document.querySelector("#import-dialog");
+const importPreviewSummary = document.querySelector("#import-preview-summary");
+const importPreviewError = document.querySelector("#import-preview-error");
+const importPreviewInvalid = document.querySelector("#import-preview-invalid");
+const importPreviewWarnings = document.querySelector(
+  "#import-preview-warnings",
+);
+const importDialogCancel = document.querySelector("#import-dialog-cancel");
+const importDialogConfirm = document.querySelector("#import-dialog-confirm");
 const samplesButton = document.querySelector("#load-samples");
 const sidebarAvatar = document.querySelector("#sidebar-avatar");
 const sidebarProfileName = document.querySelector("#sidebar-profile-name");
@@ -126,6 +143,8 @@ const ACTION_DIALOGS = Object.freeze({
 let requests = [];
 let selectedRequestId = null;
 let pendingAction = null;
+let pendingImportPreview = null;
+let importDialogOpener = null;
 
 function currentProfile() {
   return DEMO_PROFILES[profileSelect.value];
@@ -389,6 +408,139 @@ function bindActionDialog() {
       actionDialogConfirm.disabled = false;
     }
   });
+
+  importButton.addEventListener("click", () => {
+    importFileInput.value = "";
+    importFileInput.click();
+  });
+  importFileInput.addEventListener("change", handleImportFileSelection);
+  importDialogCancel.addEventListener("click", () => importDialog.close());
+  importDialog.addEventListener("close", () => {
+    importFileInput.value = "";
+    pendingImportPreview = null;
+    importPreviewSummary.textContent = "";
+    importPreviewError.textContent = "";
+    importPreviewError.hidden = true;
+    importPreviewInvalid.replaceChildren();
+    importPreviewWarnings.replaceChildren();
+    if (importDialogOpener) {
+      const opener = importDialogOpener;
+      importDialogOpener = null;
+      restoreFocus({ opener });
+    }
+  });
+  importDialogConfirm.addEventListener("click", confirmBackupImport);
+}
+
+function importPreviewFailure(message) {
+  return {
+    ok: false,
+    erros: [message],
+    avisos: [],
+    validas: [],
+    duplicadas: [],
+    invalidas: [],
+  };
+}
+
+function renderImportPreview(result) {
+  pendingImportPreview = result;
+  importPreviewSummary.textContent =
+    `Serão adicionadas: ${result.validas.length}. ` +
+    `Duplicadas ignoradas: ${result.duplicadas.length}. ` +
+    `Inválidas: ${result.invalidas.length}.`;
+  importPreviewError.textContent = result.erros.join(" ");
+  importPreviewError.hidden = result.erros.length === 0;
+  importPreviewInvalid.replaceChildren();
+  importPreviewWarnings.replaceChildren();
+
+  for (const invalid of result.invalidas) {
+    const item = document.createElement("li");
+    item.textContent = `Registro ${invalid.indice}: ${invalid.motivo}`;
+    importPreviewInvalid.append(item);
+  }
+  for (const warning of result.avisos) {
+    const item = document.createElement("li");
+    item.textContent = warning;
+    importPreviewWarnings.append(item);
+  }
+
+  importDialogConfirm.disabled = !result.ok || result.validas.length === 0;
+  importDialog.showModal();
+  importDialogCancel.focus();
+}
+
+async function handleImportFileSelection() {
+  const file = importFileInput.files?.[0];
+  if (!file) {
+    return;
+  }
+  importDialogOpener = importButton;
+
+  let result;
+  if (!file.name.toLowerCase().endsWith(".json")) {
+    result = importPreviewFailure("Selecione um arquivo com extensão .json.");
+  } else if (file.size > MAX_BACKUP_SIZE_BYTES) {
+    result = importPreviewFailure(
+      "O arquivo excede o limite de 5 MB e não foi lido.",
+    );
+  } else {
+    try {
+      result = parseBackup(await file.text(), requests);
+    } catch (error) {
+      logUnexpectedError("Falha ao ler o arquivo de backup:", error);
+      result = importPreviewFailure(
+        "Não foi possível ler o arquivo selecionado.",
+      );
+    }
+  }
+
+  renderImportPreview(result);
+  if (!result.ok) {
+    showToast(result.erros[0], "error");
+  } else if (result.invalidas.length > 0) {
+    showToast(
+      `${result.invalidas.length} registro(s) inválido(s) serão ignorados.`,
+      "warning",
+    );
+  }
+}
+
+function confirmBackupImport() {
+  const preview = pendingImportPreview;
+  if (!preview?.ok || preview.validas.length === 0) {
+    return;
+  }
+
+  importDialogConfirm.disabled = true;
+  try {
+    const result = importRequests(preview.validas, { confirmed: true });
+    requests = result.requests;
+    renderApplication();
+    dismissToast("storage");
+    if (result.added.length > 0) {
+      showToast(
+        `Importação concluída: ${result.added.length} solicitação(ões) adicionada(s).`,
+        "success",
+      );
+    } else {
+      showToast(
+        "Nenhuma solicitação nova foi adicionada; os dados existentes foram mantidos.",
+        "info",
+      );
+    }
+    if (result.duplicates.length > 0 || result.conflicts.length > 0) {
+      showToast(
+        `${result.duplicates.length} duplicada(s) ignorada(s) e ${result.conflicts.length} conflito(s) não importado(s).`,
+        "warning",
+      );
+    }
+    importDialog.close();
+  } catch (error) {
+    logUnexpectedError("Falha ao importar o backup:", error);
+    showToast(error.message, "error");
+    importDialogConfirm.disabled = false;
+  }
 }
 
 function submitRequest(values) {

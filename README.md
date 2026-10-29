@@ -40,7 +40,7 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
 - Rotas por hash: `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); o botão voltar do navegador funciona entre as telas.
 - Quantidade aceita vírgula ou ponto decimal (`2,5` ou `2.5`).
 - Contador de caracteres na descrição e validação de cada campo ao sair dele.
-- Exportação das solicitações em arquivo JSON e carga opcional de exemplos fictícios (veja "Persistência local").
+- Exportação e importação aditiva de backup JSON, além da carga opcional de exemplos fictícios (veja "Persistência local").
 
 ## Estrutura
 
@@ -60,7 +60,7 @@ index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
 JavaScript/
   application.js Inicialização, roteamento e composição das telas
-  backup.js      Exportação JSON e criação de solicitações de exemplo
+  backup.js      Exportação, validação/importação de backup e criação de exemplos
   categories.js  Apresentação e identidade visual das categorias
   community.js  Renderização das histórias fictícias do painel
   dashboard.js  Indicadores e seleção das solicitações recentes
@@ -85,6 +85,7 @@ tests/
   requests.test.js         Testes das validações e regras de negócio
   storage.test.js          Testes de persistência e migração
   queries-dashboard.test.js Testes das consultas e indicadores
+  backup-import.test.js     Testes de validação e gravação atômica de backups
   e2e/
     support.js             Servidor local, navegador e helpers E2E
     app.test.js            Cenários E2E dos fluxos da interface
@@ -93,6 +94,8 @@ FASE-6-RELATORIO.md Registro dos testes e resultados da Fase 6
 FASE-7-RELATORIO.md Registro da automação de interface e dos resultados da Fase 7
 FASE-8-RELATORIO.md Registro da refatoração e qualidade da Fase 8
 FASE-8-1-RELATORIO.md Registro dos ajustes de consolidação da Fase 8.1
+FASE-8-2-RELATORIO.md Registro da remoção do auxiliar legado da Fase 8.2
+FASE-9-RELATORIO.md Registro da importação de backup
 package.json    Tipo de módulo ES, scripts e dependências de desenvolvimento
 package-lock.json Versões reproduzíveis das dependências de desenvolvimento
 README.md       Documentação do projeto
@@ -167,11 +170,13 @@ Categorias cobertas:
 
 - **Unitários:** validação/cadastro, normalização de pesquisa, filtros combinados, ordenação, priorização e cálculos de indicadores.
 - **Integração:** armazenamento versionado, migração com backup, operações de status, histórico e falhas de gravação sem atualização parcial.
+- **Importação de backup:** envelope/versionamento, limite de arquivo, validação de registros/histórico, duplicidades/conflitos, preservação da coleção e rollback de falha.
 - **Regressão:** preservação de dados corrompidos/incompatíveis, separação entre conclusão e recebimento, bloqueio de transições indevidas e ausência de mutação dos dados na consulta.
 - **Interface E2E:** inicialização, navegação, formulários e persistência, busca/filtros, transições pelo UI, histórico/detalhes, texto HTML literal, erros de navegador, menu por teclado e larguras 320, 360, 390, 768 e 1280 px.
+- **Importação E2E:** exportar, limpar o armazenamento isolado e reimportar; cancelar por botão/Escape sem gravar; rejeitar arquivo inválido.
 - **Servidor E2E:** acesso a módulos criados sob demanda, bloqueio de traversal/arquivos privados, métodos HTTP permitidos e MIME JavaScript.
 
-Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md) e [Fase 8.1](./FASE-8-1-RELATORIO.md) para resultados e decisões efetivamente registrados.
+Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md) e [Fase 9](./FASE-9-RELATORIO.md) para resultados e decisões efetivamente registrados.
 
 ## Persistência local
 
@@ -181,9 +186,11 @@ Na primeira abertura sem dados, a aplicação inicializa uma coleção vazia. El
 
 Os dados pertencem somente ao armazenamento local deste navegador e podem ser modificados ou apagados pelo usuário. Não existe sincronização entre navegadores ou dispositivos.
 
-Uma abertura sem dados continua começando com uma coleção vazia. Dois botões no painel principal trabalham com os dados locais:
+Uma abertura sem dados continua começando com uma coleção vazia. As ações de dados locais no painel principal são:
 
-- **Exportar backup (JSON):** baixa uma cópia das solicitações. Não há importação nesta versão.
+- **Exportar backup (JSON):** baixa uma cópia versionada das solicitações, incluindo estados e histórico.
+- **Importar backup (JSON):** seleciona um arquivo `.json` exportado pelo NEXUS SOCIAL, analisa e pré-visualiza quantas solicitações serão adicionadas, ignoradas por duplicidade ou descartadas por invalidade. Só grava após confirmação explícita. A importação é aditiva: não substitui nem remove registros atuais; duplicidades são comparadas por identificador e, quando ausente, por título. Conflitos em que o identificador existe com outro conteúdo não são importados. Antes de acrescentar registros, o estado atual é copiado para uma chave `nexusSocial.requests.backup.import.<timestamp>`. Se a gravação falhar, a coleção é restaurada e a cópia temporária da operação é removida.
+- O arquivo é limitado a **5 MB** e precisa ter `schemaVersion: 2` e uma coleção `requests`; versões desconhecidas, JSON inválido e registros com campos ou histórico inconsistentes são rejeitados ou listados como inválidos. Os dados do arquivo são tratados como entrada não confiável e exibidos como texto. Uma cópia de segurança anterior à importação pode ocupar espaço adicional no armazenamento local; se não houver espaço suficiente, a operação é cancelada com erro.
 - **Carregar exemplos:** após confirmação, **acrescenta** solicitações fictícias que ainda não existem (comparadas pelo título). Nunca altera, substitui nem remove solicitações existentes; os exemplos passam pela mesma validação e gravação do cadastro comum.
 
 O tema escolhido fica na chave separada `nexusSocial.theme`.
@@ -232,7 +239,6 @@ Não use este MVP para organizar uma operação real de doações ou tomar decis
 
 - Ampliar gradualmente a cobertura E2E para outros motores de navegador e cenários de acessibilidade.
 - Melhorias adicionais de navegação assistiva e avaliação contínua de acessibilidade.
-- Exportação/importação local com confirmação explícita e cópia de segurança.
 - Pesquisa e indicadores adicionais definidos com critérios transparentes.
 - Caso o projeto evolua para operação real, avaliação de requisitos de privacidade, segurança, governança e infraestrutura antes de qualquer implementação de backend.
 
@@ -240,4 +246,4 @@ Esses itens são possibilidades futuras, não funcionalidades incluídas no MVP.
 
 ## Validação
 
-A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md) e [Fase 8.1](./FASE-8-1-RELATORIO.md) para resultados efetivamente executados e limitações.
+A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md) e [Fase 9](./FASE-9-RELATORIO.md) para resultados efetivamente executados e limitações.

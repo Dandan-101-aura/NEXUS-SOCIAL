@@ -502,6 +502,199 @@ function makeCurrentBackupKey(storage) {
   return key;
 }
 
+function makeImportBackupKey(storage) {
+  const base = `${STORAGE_KEY}.backup.import.${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  let key = base;
+  let suffix = 1;
+  while (storage.getItem(key) !== null) {
+    key = `${base}.${suffix}`;
+    suffix += 1;
+  }
+  return key;
+}
+
+function stableSerialize(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableSerialize).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+export function importRequests(requests, { confirmed = false } = {}) {
+  if (!confirmed) {
+    throw new StorageError(
+      "A importação exige confirmação explícita.",
+      "unauthorized",
+    );
+  }
+  if (!Array.isArray(requests) || !requests.every(validateStoredRequest)) {
+    throw new StorageError(
+      "Não foi possível importar: a coleção contém solicitações inválidas.",
+      "invalid-data",
+    );
+  }
+
+  const storage = getStorage();
+  let currentSerialized;
+  try {
+    currentSerialized = storage.getItem(STORAGE_KEY);
+  } catch (error) {
+    throw new StorageError(
+      "Não foi possível ler o armazenamento local antes da importação.",
+      "read-failed",
+      error,
+    );
+  }
+
+  let currentRequests = [];
+  if (currentSerialized !== null) {
+    let envelope;
+    try {
+      envelope = JSON.parse(currentSerialized);
+    } catch (error) {
+      throw new StorageError(
+        "Os dados locais estão corrompidos. A importação foi cancelada e o original foi preservado.",
+        "corrupt",
+        error,
+      );
+    }
+    currentRequests = validateEnvelope(envelope);
+  }
+
+  const requestsById = new Map(
+    currentRequests.map((request) => [request.id, request]),
+  );
+  const requestsByTitle = new Map(
+    currentRequests.map((request) => [request.title, request]),
+  );
+  const added = [];
+  const duplicates = [];
+  const conflicts = [];
+
+  for (const request of requests) {
+    const sameId = requestsById.get(request.id);
+    if (sameId) {
+      if (stableSerialize(sameId) === stableSerialize(request)) {
+        duplicates.push(request);
+      } else {
+        conflicts.push(request);
+      }
+      continue;
+    }
+    if (requestsByTitle.has(request.title)) {
+      duplicates.push(request);
+      continue;
+    }
+
+    requestsById.set(request.id, request);
+    requestsByTitle.set(request.title, request);
+    added.push(request);
+  }
+
+  if (added.length === 0) {
+    return {
+      requests: currentRequests,
+      added,
+      duplicates,
+      conflicts,
+    };
+  }
+
+  const savedRequests = [...currentRequests, ...added];
+  const nextSerialized = JSON.stringify({
+    schemaVersion: SCHEMA_VERSION,
+    requests: savedRequests,
+  });
+  const backupSerialized =
+    currentSerialized ??
+    JSON.stringify({ schemaVersion: SCHEMA_VERSION, requests: [] });
+  let backupKey;
+  try {
+    backupKey = makeImportBackupKey(storage);
+    storage.setItem(backupKey, backupSerialized);
+  } catch (error) {
+    let cleanupError;
+    if (backupKey) {
+      try {
+        storage.removeItem(backupKey);
+      } catch (caughtCleanupError) {
+        cleanupError = caughtCleanupError;
+      }
+    }
+    const cause = cleanupError
+      ? new AggregateError(
+          [error, cleanupError],
+          "A criação e a limpeza da cópia de segurança falharam.",
+        )
+      : error;
+    throw new StorageError(
+      cleanupError
+        ? "A criação da cópia de segurança falhou e não foi possível limpar completamente a tentativa. Verifique o armazenamento local."
+        : "Não foi possível criar a cópia de segurança anterior à importação. Nenhuma solicitação foi importada.",
+      cleanupError
+        ? "rollback-failed"
+        : error?.name === "QuotaExceededError"
+          ? "quota-exceeded"
+          : "backup-failed",
+      cause,
+    );
+  }
+
+  try {
+    storage.setItem(STORAGE_KEY, nextSerialized);
+  } catch (error) {
+    const rollbackErrors = [];
+    try {
+      storage.removeItem(backupKey);
+    } catch (rollbackError) {
+      rollbackErrors.push(rollbackError);
+    }
+    try {
+      if (currentSerialized === null) {
+        storage.removeItem(STORAGE_KEY);
+      } else {
+        storage.setItem(STORAGE_KEY, currentSerialized);
+      }
+    } catch (rollbackError) {
+      rollbackErrors.push(rollbackError);
+    }
+
+    const cause =
+      rollbackErrors.length > 0
+        ? new AggregateError(
+            [error, ...rollbackErrors],
+            "Importação e rollback falharam.",
+          )
+        : error;
+    throw new StorageError(
+      rollbackErrors.length > 0
+        ? "A gravação da importação falhou e não foi possível confirmar a restauração integral. Verifique o armazenamento local."
+        : error?.name === "QuotaExceededError"
+          ? "O armazenamento local está cheio. A importação foi cancelada e os dados existentes foram preservados."
+          : "Não foi possível gravar a importação. Os dados existentes foram preservados.",
+      rollbackErrors.length > 0
+        ? "rollback-failed"
+        : error?.name === "QuotaExceededError"
+          ? "quota-exceeded"
+          : "import-write-failed",
+      cause,
+    );
+  }
+
+  return {
+    requests: savedRequests,
+    added,
+    duplicates,
+    conflicts,
+  };
+}
+
 export function replaceCollection(requests, { confirmed = false } = {}) {
   if (!confirmed) {
     throw new StorageError(

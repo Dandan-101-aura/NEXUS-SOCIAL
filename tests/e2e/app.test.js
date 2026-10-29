@@ -513,3 +513,182 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
     },
     { width: 390, height: 844 },
   ));
+
+test("exports, clears isolated storage and additively imports a backup", async (t) =>
+  runAppTest(t, async ({ diagnostics, page }) => {
+    const title = '<img src=x onerror="alert(1)"> pedido restaurado';
+    const description = "Descrição <script>literal</script> da importação.";
+    const original = await createRequestThroughForm(page, {
+      title,
+      description,
+    });
+
+    await page.locator('[data-view="dashboard"]').click();
+    await page.evaluate(() => {
+      const createObjectURL = URL.createObjectURL.bind(URL);
+      URL.createObjectURL = (blob) => {
+        window.lastExportBlob = blob;
+        return createObjectURL(blob);
+      };
+    });
+    await page.getByRole("button", { name: /Exportar backup/ }).click();
+    await page
+      .locator("#toast-region .toast-text", {
+        hasText: "Backup com 1 solicitação(ões) baixado.",
+      })
+      .waitFor();
+    const backupText = await page.evaluate(() => window.lastExportBlob.text());
+    assert.equal(JSON.parse(backupText).requests.length, 1);
+
+    await page.evaluate(() => localStorage.removeItem("nexusSocial.requests"));
+    await page.reload({ waitUntil: "networkidle" });
+    assert.equal((await getStoredRequests(page)).length, 0);
+
+    await page.locator("#import-backup-file").setInputFiles({
+      name: "nexus-social-backup-exportado.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(backupText),
+    });
+    const dialog = page.locator("#import-dialog");
+    await dialog.waitFor({ state: "visible" });
+    assert.match(
+      await page.locator("#import-preview-summary").textContent(),
+      /Serão adicionadas: 1/,
+    );
+    const confirmButton = page.getByRole("button", {
+      name: "Confirmar importação",
+    });
+    assert.equal(await confirmButton.isEnabled(), true);
+
+    await confirmButton.click();
+    await page
+      .locator("#toast-region .toast-text", {
+        hasText: "Importação concluída: 1 solicitação(ões) adicionada(s).",
+      })
+      .waitFor();
+    assert.deepEqual(await getStoredRequests(page), [original]);
+
+    const importBackup = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((item) =>
+        item.startsWith("nexusSocial.requests.backup.import."),
+      );
+      return key ? JSON.parse(localStorage.getItem(key)) : null;
+    });
+    assert.deepEqual(importBackup, { schemaVersion: 2, requests: [] });
+
+    await page.locator('[data-view="requests"]').click();
+    assert.equal(
+      await page.locator("#request-list .request-card h3").textContent(),
+      title,
+    );
+    assert.equal(
+      await page.locator("#request-list .request-card img").count(),
+      0,
+    );
+    assertNoBrowserErrors(assert, diagnostics);
+  }));
+
+test("cancelling an import by button or Escape does not change stored data", async (t) =>
+  runAppTest(t, async ({ page }) => {
+    const existing = await createRequestThroughForm(page, {
+      title: "Registro anterior à pré-visualização",
+    });
+    const candidate = await createRequestThroughForm(page, {
+      title: "Registro candidato à importação",
+    });
+    await page.evaluate((requestId) => {
+      const envelope = JSON.parse(localStorage.getItem("nexusSocial.requests"));
+      envelope.requests = envelope.requests.filter(
+        (request) => request.id === requestId,
+      );
+      localStorage.setItem("nexusSocial.requests", JSON.stringify(envelope));
+    }, existing.id);
+    await page.reload({ waitUntil: "networkidle" });
+    await page.locator('[data-view="dashboard"]').click();
+    const before = await page.evaluate(() =>
+      localStorage.getItem("nexusSocial.requests"),
+    );
+    const candidateBackup = JSON.stringify({
+      app: "nexus-social",
+      schemaVersion: 2,
+      exportedAt: new Date().toISOString(),
+      requests: [candidate],
+    });
+    const file = {
+      name: "candidate.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(candidateBackup),
+    };
+    const fileInput = page.locator("#import-backup-file");
+    const dialog = page.locator("#import-dialog");
+
+    await fileInput.setInputFiles(file);
+    await dialog.waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Cancelar" }).click();
+    await dialog.waitFor({ state: "hidden" });
+    await page.waitForFunction(
+      () => document.activeElement?.id === "import-backup",
+    );
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem("nexusSocial.requests")),
+      before,
+    );
+
+    await fileInput.setInputFiles(file);
+    await dialog.waitFor({ state: "visible" });
+    await page.keyboard.press("Escape");
+    await dialog.waitFor({ state: "hidden" });
+    await page.waitForFunction(
+      () => document.activeElement?.id === "import-backup",
+    );
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem("nexusSocial.requests")),
+      before,
+    );
+  }));
+
+test("invalid import file reports an error without changing stored data", async (t) =>
+  runAppTest(t, async ({ page }) => {
+    const existing = await createRequestThroughForm(page, {
+      title: "Registro deve permanecer intacto",
+    });
+    const before = await page.evaluate(() =>
+      localStorage.getItem("nexusSocial.requests"),
+    );
+
+    await page.locator("#import-backup-file").setInputFiles({
+      name: "backup-invalido.json",
+      mimeType: "application/json",
+      buffer: Buffer.from("{ JSON inválido"),
+    });
+    await page.locator("#import-dialog").waitFor({ state: "visible" });
+    assert.equal(
+      await page.locator("#import-preview").getAttribute("aria-live"),
+      "polite",
+    );
+    assert.equal(
+      await page.locator("#import-backup-file").getAttribute("aria-label"),
+      "Selecionar arquivo de backup JSON",
+    );
+    assert.match(
+      await page.locator("#import-preview-error").textContent(),
+      /JSON válido/,
+    );
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Confirmar importação" })
+        .isEnabled(),
+      false,
+    );
+    assert.match(
+      await page.locator("#toast-region .toast-text").last().textContent(),
+      /JSON válido/,
+    );
+    await page.getByRole("button", { name: "Cancelar" }).click();
+
+    assert.deepEqual(await getStoredRequests(page), [existing]);
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem("nexusSocial.requests")),
+      before,
+    );
+  }));
