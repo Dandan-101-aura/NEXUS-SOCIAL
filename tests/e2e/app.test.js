@@ -3,9 +3,34 @@ import test from "node:test";
 import {
   assertNoBrowserErrors,
   createRequestThroughForm,
+  getServerBaseUrl,
   getStoredRequests,
+  openApp,
   runAppTest,
 } from "./support.js";
+
+test("shows the public Hero and opens the demonstration", async (t) => {
+  const { diagnostics, page } = await openApp(t);
+  await page.goto(getServerBaseUrl(), { waitUntil: "networkidle" });
+
+  assert.equal(await page.locator("#public-home").isVisible(), true);
+  assert.match(
+    await page.locator("#public-title").textContent(),
+    /A ajuda certa\.\s*No momento certo\./,
+  );
+  assert.equal(await page.locator(".app-shell").isVisible(), false);
+
+  await page
+    .getByRole("link", { name: /Abrir a demonstração/ })
+    .first()
+    .click();
+  await page.locator("#view-dashboard").waitFor({ state: "visible" });
+  assert.equal(await page.locator("#public-home").isVisible(), false);
+
+  await page.locator(".sidebar .brand").click();
+  await page.locator("#public-home").waitFor({ state: "visible" });
+  assertNoBrowserErrors(assert, diagnostics);
+});
 
 test("starts empty, renders indicators and navigates across main views", async (t) =>
   runAppTest(t, async ({ diagnostics, page }) => {
@@ -27,12 +52,14 @@ test("starts empty, renders indicators and navigates across main views", async (
       await page.locator(`[data-view="${view}"]`).click();
       await page.locator(`#view-${view}`).waitFor({ state: "visible" });
       assert.equal(
-        await page.locator("main .view:not([hidden]) h1").textContent(),
+        await page
+          .locator("#main-content .view:not([hidden]) h1")
+          .textContent(),
         heading,
       );
       assert.equal(
         await page
-          .locator("main")
+          .locator("#main-content")
           .evaluate(
             (main) =>
               [...main.querySelectorAll(".view")].filter(

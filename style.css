@@ -12,6 +12,8 @@
     sans-serif;
 
   --bg: #f1f7fb;
+  --page-art: url("./assets/background-light.jpg");
+  --page-wash: rgb(239 248 255 / 10%);
   --surface: #ffffff;
   --surface-2: #f1f5f9;
   --glass: rgb(255 255 255 / 85%);
@@ -63,6 +65,8 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --page-art: url("./assets/background-dark.jpg");
+  --page-wash: rgb(4 10 28 / 22%);
   --bg: #06101d;
   --surface: #0b1b2d;
   --surface-2: #12283b;
@@ -121,8 +125,11 @@ body {
   margin: 0;
   background-color: var(--bg);
   background-image:
+    linear-gradient(var(--page-wash), var(--page-wash)), var(--page-art),
     radial-gradient(55rem 30rem at 85% -10%, var(--glow-1), transparent 60%),
     radial-gradient(40rem 25rem at -5% 105%, var(--glow-2), transparent 60%);
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
   background-attachment: fixed;
   color: var(--text);
   font-size: 0.9375rem;

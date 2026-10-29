@@ -24,6 +24,7 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
 
 ## Funcionalidades
 
+- Página pública de apresentação com acesso explícito à demonstração.
 - Navegação entre painel, solicitações, cadastro, detalhes e histórico sem recarregar a aplicação.
 - Cadastro de solicitações de alimentos não perecíveis, produtos de higiene, roupas e itens básicos de uso cotidiano.
 - Validação de campos, quantidade, categoria, unidade, urgência e região aproximada.
@@ -37,7 +38,7 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
 - Histórias de impacto fictícias no painel, identificadas como conteúdo de demonstração e sem depoimentos de pessoas reais.
 - Tema claro, escuro ou automático (segue o sistema), com alternância suave e preferência salva neste navegador.
 - Notificações flutuantes (toasts) que não empurram o conteúdo.
-- Rotas por hash: `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); o botão voltar do navegador funciona entre as telas.
+- Rotas por hash: `#/inicio`, `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); sem rota, a apresentação pública é exibida e o botão voltar do navegador funciona entre as telas.
 - Quantidade aceita vírgula ou ponto decimal (`2,5` ou `2.5`).
 - Contador de caracteres na descrição e validação de cada campo ao sair dele.
 - Exportação e importação aditiva de backup JSON, além da carga opcional de exemplos fictícios (veja "Persistência local").
@@ -52,12 +53,15 @@ Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o s
   settings.json Configuração legada de testes Python no VS Code, não usada pelo projeto JS
 assets/
   banner-solidariedade.jpg       Imagem de banner
+  background-dark.jpg            Fundo do tema escuro
+  background-light.jpg           Fundo do tema claro
   Logo Nexus Social em Gradiente Tecnológico.png  Logo em PNG
   nexus-social-logo.jpg          Logo em JPEG
 editorial.css   Estilos visuais complementares para cartões e seções editoriais
 eslint.config.js Configuração flat do ESLint
 index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
+public.css      Apresentação pública e Hero de entrada
 JavaScript/
   application.js Inicialização, roteamento e composição das telas
   backup.js      Exportação, validação/importação de backup e criação de exemplos

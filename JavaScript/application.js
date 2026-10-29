@@ -35,6 +35,8 @@ import { bindRequestsView, renderRequestsView } from "./views/requests-view.js";
 import { ROLE_LABELS } from "./views/view-utils.js";
 
 const views = [...document.querySelectorAll(".view")];
+const publicHome = document.querySelector("#public-home");
+const appShell = document.querySelector(".app-shell");
 const navigationLinks = [...document.querySelectorAll(".nav-link[data-view]")];
 const navigation = document.querySelector("#site-navigation");
 const menuToggle = document.querySelector(".menu-toggle");
@@ -70,6 +72,7 @@ const sidebarAvatar = document.querySelector("#sidebar-avatar");
 const sidebarProfileName = document.querySelector("#sidebar-profile-name");
 
 const VIEW_TITLES = Object.freeze({
+  home: "Conheça o NEXUS SOCIAL",
   dashboard: "Painel principal",
   requests: "Solicitações",
   "new-request": "Cadastrar solicitação",
@@ -211,6 +214,20 @@ function bindNavigation() {
 }
 
 function showView(viewName, moveFocus) {
+  if (viewName === "home") {
+    publicHome.hidden = false;
+    appShell.hidden = true;
+    document.title = `${VIEW_TITLES.home} | NEXUS SOCIAL`;
+    closeMobileNavigation();
+    if (moveFocus) {
+      publicHome.focus({ preventScroll: true });
+      window.scrollTo({ top: 0 });
+    }
+    return;
+  }
+
+  publicHome.hidden = true;
+  appShell.hidden = false;
   const targetView = document.querySelector(`#view-${viewName}`);
   const targetLink = navigationLinks.find(
     (link) => link.dataset.view === viewName,

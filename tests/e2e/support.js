@@ -8,7 +8,12 @@ import { chromium } from "playwright";
 const PROJECT_ROOT = resolve(import.meta.dirname, "../..");
 const FAILURE_ARTIFACTS = join(PROJECT_ROOT, "test-results");
 const APPLICATION_ROOTS = new Set(["JavaScript", "assets"]);
-const APPLICATION_FILES = new Set(["index.html", "style.css", "editorial.css"]);
+const APPLICATION_FILES = new Set([
+  "index.html",
+  "style.css",
+  "editorial.css",
+  "public.css",
+]);
 const BLOCKED_SEGMENTS = new Set(["tests", "node_modules", "test-results"]);
 const CONTENT_TYPES = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -254,7 +259,7 @@ export async function openApp(t, viewport = { width: 1280, height: 900 }) {
 export async function runAppTest(t, callback, viewport) {
   const app = await openApp(t, viewport);
   try {
-    await app.page.goto(baseUrl, { waitUntil: "networkidle" });
+    await app.page.goto(`${baseUrl}#/painel`, { waitUntil: "networkidle" });
     return await callback(app);
   } catch (error) {
     let screenshotPath = "not captured";
