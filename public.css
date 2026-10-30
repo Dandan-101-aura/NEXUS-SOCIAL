@@ -55,11 +55,28 @@
 }
 
 .public-hero {
+  --public-action-accent: var(--primary);
   display: grid;
   grid-template-columns: minmax(0, 1.03fr) minmax(340px, 0.97fr);
   align-items: center;
   gap: clamp(40px, 6vw, 88px);
   padding-block: clamp(36px, 5vw, 68px) clamp(48px, 6vw, 76px);
+}
+
+.public-home[data-action-step="follow"] .public-hero {
+  --public-action-accent: #0b7f84;
+}
+
+.public-home[data-action-step="confirm"] .public-hero {
+  --public-action-accent: #047857;
+}
+
+:root[data-theme="dark"] .public-home[data-action-step="follow"] .public-hero {
+  --public-action-accent: #38d9ce;
+}
+
+:root[data-theme="dark"] .public-home[data-action-step="confirm"] .public-hero {
+  --public-action-accent: #6ee7b7;
 }
 
 .public-hero-copy {
@@ -81,7 +98,47 @@
   font-weight: 500;
 }
 
-.public-hero-copy > p:not(.public-demo-note) {
+.public-action-cycle {
+  display: inline-flex;
+  min-height: 62px;
+  align-items: center;
+  gap: 12px;
+  margin: -5px 0 18px;
+  padding: 8px 17px 8px 9px;
+  border: 1px solid color-mix(in srgb, var(--public-action-accent) 30%, var(--border));
+  border-radius: 14px;
+  background-color: color-mix(in srgb, var(--public-action-accent) 9%, var(--surface));
+  box-shadow: 0 8px 24px -18px rgb(5 47 65 / 40%);
+  color: var(--text);
+  transition: background-color 770ms ease, border-color 770ms ease;
+}
+
+.public-action-cycle-icon {
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--public-action-accent) 17%, transparent);
+  color: var(--public-action-accent);
+  transition: background-color 770ms ease, color 770ms ease;
+}
+
+.public-action-cycle-icon .icon {
+  width: 23px;
+  height: 23px;
+}
+
+.public-action-cycle-copy {
+  display: inline-block;
+  min-width: 19ch;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.public-hero-copy > p:not(.public-demo-note):not(.public-action-cycle) {
   max-width: 54ch;
   margin: 0 0 30px;
   color: var(--muted);
@@ -320,7 +377,8 @@
   .public-hero {
     grid-template-columns: minmax(0, 1fr);
     gap: 34px;
-    padding-block: 42px 52px;
+    min-height: max(760px, calc(100svh - 84px));
+    padding-block: 42px 160px;
   }
 
   .public-hero h1 {
@@ -329,7 +387,7 @@
     font-size: clamp(2.9rem, 12vw, 4.3rem);
   }
 
-  .public-hero-copy > p:not(.public-demo-note) {
+  .public-hero-copy > p:not(.public-demo-note):not(.public-action-cycle) {
     margin-bottom: 22px;
     font-size: 1rem;
   }

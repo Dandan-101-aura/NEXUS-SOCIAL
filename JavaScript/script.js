@@ -24,6 +24,8 @@ import { dismissToast, showToast } from "./toast.js";
 import { initTheme } from "./theme.js";
 import { navigateTo, pathFor, startRouter } from "./router.js";
 import { buildSampleRequests, downloadBackup } from "./backup.js";
+import { initSpecularButtons } from "./specular-button.js";
+import { initPublicHeroCycle } from "./public-hero.js";
 
 // ---------------------------------------------------------------------------
 // Elementos da página
@@ -32,10 +34,9 @@ const views = [...document.querySelectorAll(".view")];
 const publicHome = document.querySelector("#public-home");
 const appShell = document.querySelector(".app-shell");
 const navigationLinks = [...document.querySelectorAll(".nav-link[data-view]")];
+const dockLinks = [...document.querySelectorAll(".dock-item[data-view]")];
 const detailsNavLink = document.querySelector("#details-nav-link");
 const navigation = document.querySelector("#site-navigation");
-const menuToggle = document.querySelector(".menu-toggle");
-const backdrop = document.querySelector(".nav-backdrop");
 const announcement = document.querySelector("#navigation-announcement");
 const mainContent = document.querySelector("#main-content");
 const requestForm = document.querySelector("#request-form");
@@ -134,54 +135,49 @@ function formatDate(date) {
 }
 
 // ---------------------------------------------------------------------------
-// Navegação lateral (mobile)
+// Navegação compacta no mobile e magnificação do Dock
 // ---------------------------------------------------------------------------
-function closeMobileNavigation() {
-  navigation.classList.remove("is-open");
-  backdrop.hidden = true;
-  menuToggle.setAttribute("aria-expanded", "false");
-  menuToggle.setAttribute("aria-label", "Abrir navegação");
-  navigation.inert = window.matchMedia("(max-width: 680px)").matches;
-}
-
-menuToggle.addEventListener("click", () => {
-  const isOpen = navigation.classList.toggle("is-open");
-  backdrop.hidden = !isOpen;
-  navigation.inert = !isOpen && window.matchMedia("(max-width: 680px)").matches;
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-  menuToggle.setAttribute("aria-label", isOpen ? "Fechar navegação" : "Abrir navegação");
-  if (isOpen) {
-    navigationLinks[0].focus();
-  }
-});
-
-backdrop.addEventListener("click", () => {
-  closeMobileNavigation();
-  menuToggle.focus();
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && navigation.classList.contains("is-open")) {
-    closeMobileNavigation();
-    menuToggle.focus();
-  }
-});
-
-for (const link of navigationLinks) {
-  // Clicar no link da tela atual não muda o endereço, então fechamos o menu aqui também.
-  link.addEventListener("click", closeMobileNavigation);
-}
-
 function updateNavigationForViewport() {
-  const isMobile = window.matchMedia("(max-width: 680px)").matches;
-  navigation.inert = isMobile && !navigation.classList.contains("is-open");
-  if (!isMobile) {
-    closeMobileNavigation();
-  }
+  navigation.inert = window.matchMedia("(max-width: 680px)").matches;
 }
 
 window.addEventListener("resize", updateNavigationForViewport);
 updateNavigationForViewport();
+
+const resetSidebarDock = () => navigationLinks.forEach((item) => item.style.setProperty("--dock-scale", "1"));
+navigation.addEventListener("pointermove", (event) => {
+  if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for (const item of navigationLinks) {
+    const bounds = item.getBoundingClientRect();
+    const distance = Math.abs(event.clientY - (bounds.top + bounds.height / 2));
+    const influence = Math.max(0, 1 - distance / 118);
+    item.style.setProperty("--dock-scale", String(1 + influence * 0.22));
+  }
+});
+navigation.addEventListener("pointerleave", resetSidebarDock);
+
+const dock = document.querySelector(".mobile-dock");
+if (dock) {
+  const resetDock = () => dockLinks.forEach((item) => item.style.setProperty("--dock-scale", "1"));
+  dock.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (const item of dockLinks) {
+      const bounds = item.getBoundingClientRect();
+      const distance = Math.abs(event.clientX - (bounds.left + bounds.width / 2));
+      const influence = Math.max(0, 1 - distance / 112);
+      item.style.setProperty("--dock-scale", String(1 + influence * 0.34));
+    }
+  });
+  dock.addEventListener("pointerleave", resetDock);
+  dockLinks.forEach((item) => {
+    item.addEventListener("click", () => {
+      item.classList.remove("is-launching");
+      void item.offsetWidth;
+      item.classList.add("is-launching");
+      window.setTimeout(() => item.classList.remove("is-launching"), 420);
+    });
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Selects preenchidos a partir das listas de requests.js
@@ -212,6 +208,10 @@ function showView(viewName, moveFocus) {
     publicHome.hidden = false;
     appShell.hidden = true;
     for (const link of navigationLinks) {
+      link.classList.remove("is-active");
+      link.removeAttribute("aria-current");
+    }
+    for (const link of dockLinks) {
       link.classList.remove("is-active");
       link.removeAttribute("aria-current");
     }
@@ -251,7 +251,15 @@ function showView(viewName, moveFocus) {
   const title = VIEW_TITLES[viewName];
   announcement.textContent = title;
   document.title = `${title} | NEXUS SOCIAL`;
-  closeMobileNavigation();
+  for (const link of dockLinks) {
+    const isCurrent = link.dataset.view === viewName;
+    link.classList.toggle("is-active", isCurrent);
+    if (isCurrent) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  }
 
   if (moveFocus) {
     mainContent.focus({ preventScroll: true });
@@ -997,6 +1005,8 @@ window.addEventListener("storage", (event) => {
 // Início
 // ---------------------------------------------------------------------------
 hydrateIcons();
+initSpecularButtons();
+initPublicHeroCycle();
 initTheme(document.querySelector("#theme-toggle"));
 updateDescriptionCounter();
 renderCommunityStories(document.querySelector("#community-stories"));

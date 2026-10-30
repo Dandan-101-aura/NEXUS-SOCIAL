@@ -41,14 +41,17 @@
         <a class="button button-primary" href="#/painel">Abrir demonstração <span class="btn-icon" data-icon="arrow-right"></span></a>
       </nav>
     </header>
-
     <div class="public-content" id="public-content" tabindex="-1">
       <section class="public-hero" aria-labelledby="public-title">
         <div class="public-hero-copy">
           <h1 id="public-title">A ajuda certa.<br><em>No momento certo.</em></h1>
-          <p>Explore pedidos fictícios: cadastre uma solicitação, alterne entre três perfis simulados e acompanhe as alterações no histórico local.</p>
+          <p class="public-action-cycle" id="public-action-cycle" aria-hidden="true">
+            <span class="public-action-cycle-icon" id="public-action-cycle-icon" data-icon="plus-circle"></span>
+            <span class="public-action-cycle-copy" id="public-action-cycle-copy">Cadastre um pedido fictício</span>
+          </p>
+          <p>Alterne entre três perfis simulados e acompanhe cada etapa do pedido no histórico local.</p>
           <div class="public-hero-actions">
-            <a class="button button-primary" href="#/painel">Abrir a demonstração <span class="btn-icon" data-icon="arrow-right"></span></a>
+            <a class="button button-primary specular-button" data-specular-button href="#/painel">Abrir a demonstração <span class="btn-icon" data-icon="arrow-right"></span></a>
             <a class="public-secondary-link" href="#public-how-it-works">Entenda o fluxo</a>
           </div>
           <p class="public-demo-note"><span class="public-demo-icon" data-icon="info"></span><span>Este projeto é uma demonstração local. Não organiza doações reais nem confirma entregas físicas.</span></p>
@@ -144,10 +147,6 @@
 
     <div class="workspace">
       <header class="topbar">
-        <button class="menu-toggle" type="button" aria-label="Abrir navegação" aria-controls="site-navigation"
-          aria-expanded="false">
-          <span data-icon="menu"></span>
-        </button>
         <div class="topbar-brand">
           <img class="topbar-logo" src="./assets/nexus-social-logo.jpg" alt="NEXUS SOCIAL">
         </div>
@@ -190,10 +189,10 @@
               <h2>A ajuda certa.<br> <em>No momento certo.</em></h2>
               <p>Conectando quem precisa de alimentos e itens essenciais a voluntários dispostos a fazer a diferença na comunidade.</p>
               <div class="welcome-actions">
-                <button class="button button-light" type="button" data-navigate="requests">
+                <button class="button button-light specular-button" data-specular-button type="button" data-navigate="requests">
                   Ver solicitações <span class="btn-icon" data-icon="arrow-right"></span>
                 </button>
-                <button class="button button-ghost-light" type="button" data-navigate="new-request">
+                <button class="button button-ghost-light specular-button" data-specular-button type="button" data-navigate="new-request">
                   <span class="btn-icon" data-icon="plus-circle"></span> Pedir ajuda
                 </button>
               </div>
@@ -481,13 +480,27 @@
         </section>
       </main>
 
+      <nav class="mobile-dock" aria-label="Navegação rápida">
+        <a class="dock-item" href="#/painel" data-view="dashboard" aria-label="Painel principal">
+          <span class="dock-icon" data-icon="home"></span><span class="dock-label">Painel</span>
+        </a>
+        <a class="dock-item" href="#/solicitacoes" data-view="requests" aria-label="Solicitações">
+          <span class="dock-icon" data-icon="list"></span><span class="dock-label">Solicitações</span>
+        </a>
+        <a class="dock-item dock-item-primary" href="#/cadastrar" data-view="new-request" aria-label="Cadastrar solicitação">
+          <span class="dock-icon" data-icon="plus-circle"></span><span class="dock-label">Cadastrar</span>
+        </a>
+        <a class="dock-item" href="#/historico" data-view="history" aria-label="Histórico">
+          <span class="dock-icon" data-icon="clock"></span><span class="dock-label">Histórico</span>
+        </a>
+      </nav>
+
       <footer class="site-footer">
         <p>Projeto demonstrativo. Dados locais não são registros invioláveis nem confirmação de atendimento.</p>
       </footer>
     </div>
   </div>
 
-  <div class="nav-backdrop" hidden></div>
   <div class="visually-hidden" id="navigation-announcement" aria-live="polite"></div>
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="false"></div>
 
