@@ -79,7 +79,7 @@
               local.
             </p>
             <div class="public-hero-actions">
-              <a class="button button-primary" href="#/painel"
+              <a class="button button-primary specular-button" data-specular-button href="#/painel"
                 >Abrir a demonstração
                 <span class="btn-icon" data-icon="arrow-right"></span>
               </a>
@@ -255,15 +255,6 @@
 
       <div class="workspace">
         <header class="topbar">
-          <button
-            class="menu-toggle"
-            type="button"
-            aria-label="Abrir navegação"
-            aria-controls="site-navigation"
-            aria-expanded="false"
-          >
-            <span data-icon="menu"></span>
-          </button>
           <div class="topbar-brand">
             <img
               class="topbar-logo"
@@ -337,7 +328,8 @@
                 </p>
                 <div class="welcome-actions">
                   <button
-                    class="button button-light"
+                    class="button button-light specular-button"
+                    data-specular-button
                     type="button"
                     data-navigate="requests"
                   >
@@ -345,7 +337,8 @@
                     <span class="btn-icon" data-icon="arrow-right"></span>
                   </button>
                   <button
-                    class="button button-ghost-light"
+                    class="button button-ghost-light specular-button"
+                    data-specular-button
                     type="button"
                     data-navigate="new-request"
                   >
@@ -840,6 +833,25 @@
           </section>
         </main>
 
+        <nav class="mobile-dock" aria-label="Navegação rápida">
+          <a class="dock-item" href="#/painel" data-view="dashboard">
+            <span class="dock-icon" data-icon="home"></span>
+            <span class="dock-label">Painel</span>
+          </a>
+          <a class="dock-item" href="#/solicitacoes" data-view="requests">
+            <span class="dock-icon" data-icon="list"></span>
+            <span class="dock-label">Solicitações</span>
+          </a>
+          <a class="dock-item dock-item-primary" href="#/cadastrar" data-view="new-request">
+            <span class="dock-icon" data-icon="plus-circle"></span>
+            <span class="dock-label">Cadastrar</span>
+          </a>
+          <a class="dock-item" href="#/historico" data-view="history">
+            <span class="dock-icon" data-icon="clock"></span>
+            <span class="dock-label">Histórico</span>
+          </a>
+        </nav>
+
         <footer class="site-footer">
           <p>
             Projeto demonstrativo. Dados locais não são registros invioláveis
@@ -849,7 +861,6 @@
       </div>
     </div>
 
-    <div class="nav-backdrop" hidden></div>
     <div
       class="visually-hidden"
       id="navigation-announcement"

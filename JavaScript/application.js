@@ -20,6 +20,7 @@ import { hydrateIcons } from "./icons.js";
 import { renderCommunityStories } from "./community.js";
 import { dismissToast, showToast } from "./toast.js";
 import { initTheme } from "./theme.js";
+import { initSpecularButtons } from "./specular-button.js";
 import { navigateTo, startRouter } from "./router.js";
 import {
   buildSampleRequests,
@@ -38,9 +39,8 @@ const views = [...document.querySelectorAll(".view")];
 const publicHome = document.querySelector("#public-home");
 const appShell = document.querySelector(".app-shell");
 const navigationLinks = [...document.querySelectorAll(".nav-link[data-view]")];
+const dockLinks = [...document.querySelectorAll(".dock-item[data-view]")];
 const navigation = document.querySelector("#site-navigation");
-const menuToggle = document.querySelector(".menu-toggle");
-const backdrop = document.querySelector(".nav-backdrop");
 const announcement = document.querySelector("#navigation-announcement");
 const mainContent = document.querySelector("#main-content");
 const profileSelect = document.querySelector("#demo-profile");
@@ -161,52 +161,42 @@ function renderApplication() {
   renderHistoryView(requests);
 }
 
-function closeMobileNavigation() {
-  navigation.classList.remove("is-open");
-  backdrop.hidden = true;
-  menuToggle.setAttribute("aria-expanded", "false");
-  menuToggle.setAttribute("aria-label", "Abrir navegação");
+function updateNavigationForViewport() {
   navigation.inert = window.matchMedia("(max-width: 680px)").matches;
 }
 
-function updateNavigationForViewport() {
-  const isMobile = window.matchMedia("(max-width: 680px)").matches;
-  navigation.inert = isMobile && !navigation.classList.contains("is-open");
-  if (!isMobile) {
-    closeMobileNavigation();
-  }
-}
-
 function bindNavigation() {
-  menuToggle.addEventListener("click", () => {
-    const isOpen = navigation.classList.toggle("is-open");
-    backdrop.hidden = !isOpen;
-    navigation.inert =
-      !isOpen && window.matchMedia("(max-width: 680px)").matches;
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
-    menuToggle.setAttribute(
-      "aria-label",
-      isOpen ? "Fechar navegação" : "Abrir navegação",
-    );
-    if (isOpen) {
-      navigationLinks[0].focus();
-    }
-  });
+  const dock = document.querySelector(".mobile-dock");
+  if (dock) {
+    const resetDock = () =>
+      dockLinks.forEach((item) => item.style.setProperty("--dock-scale", "1"));
 
-  backdrop.addEventListener("click", () => {
-    closeMobileNavigation();
-    menuToggle.focus();
-  });
+    dock.addEventListener("pointermove", (event) => {
+      if (
+        event.pointerType !== "mouse" ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
+      for (const item of dockLinks) {
+        const bounds = item.getBoundingClientRect();
+        const distance = Math.abs(
+          event.clientX - (bounds.left + bounds.width / 2),
+        );
+        const influence = Math.max(0, 1 - distance / 112);
+        item.style.setProperty("--dock-scale", String(1 + influence * 0.34));
+      }
+    });
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && navigation.classList.contains("is-open")) {
-      closeMobileNavigation();
-      menuToggle.focus();
-    }
-  });
-
-  for (const link of navigationLinks) {
-    link.addEventListener("click", closeMobileNavigation);
+    dock.addEventListener("pointerleave", resetDock);
+    dockLinks.forEach((item) => {
+      item.addEventListener("click", () => {
+        item.classList.remove("is-launching");
+        void item.offsetWidth;
+        item.classList.add("is-launching");
+        window.setTimeout(() => item.classList.remove("is-launching"), 420);
+      });
+    });
   }
 
   window.addEventListener("resize", updateNavigationForViewport);
@@ -218,7 +208,10 @@ function showView(viewName, moveFocus) {
     publicHome.hidden = false;
     appShell.hidden = true;
     document.title = `${VIEW_TITLES.home} | NEXUS SOCIAL`;
-    closeMobileNavigation();
+    for (const link of dockLinks) {
+      link.classList.remove("is-active");
+      link.removeAttribute("aria-current");
+    }
     if (moveFocus) {
       document.querySelector("#public-title").focus({ preventScroll: true });
       window.scrollTo({ top: 0 });
@@ -252,11 +245,19 @@ function showView(viewName, moveFocus) {
     }
   }
 
+  for (const link of dockLinks) {
+    const isCurrent = link.dataset.view === viewName;
+    link.classList.toggle("is-active", isCurrent);
+    if (isCurrent) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  }
+
   const title = VIEW_TITLES[viewName];
   announcement.textContent = title;
   document.title = `${title} | NEXUS SOCIAL`;
-  closeMobileNavigation();
-
   if (moveFocus) {
     targetView.querySelector("h1").focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
@@ -680,6 +681,7 @@ function bindToolbarActions() {
 
 export function startApplication() {
   hydrateIcons();
+  initSpecularButtons();
   initTheme(document.querySelector("#theme-toggle"));
   renderCommunityStories(document.querySelector("#community-stories"));
 
