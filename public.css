@@ -47,6 +47,9 @@
 
 .public-how-link,
 .public-secondary-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--text);
   font-size: 0.9rem;
   font-weight: 600;
@@ -312,7 +315,7 @@
   }
 
   .public-nav .button {
-    min-height: 42px;
+    min-height: 44px;
     padding-inline: 14px;
     font-size: 0.82rem;
   }

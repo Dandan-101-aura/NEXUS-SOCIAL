@@ -20,7 +20,7 @@ O MVP destina-se a demonstrações, avaliação de interface e aprendizagem sobr
 - `localStorage` para persistência neste navegador.
 
 Não há frameworks, bibliotecas visuais, serviços externos, backend ou dependências de execução.
-Playwright, ESLint e Prettier são dependências somente de desenvolvimento; o site não depende delas para funcionar.
+Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvimento; o site não depende delas para funcionar.
 
 ## Funcionalidades
 
@@ -93,19 +93,21 @@ tests/
   e2e/
     support.js             Servidor local, navegador e helpers E2E
     app.test.js            Cenários E2E dos fluxos da interface
+    accessibility.test.js  Auditoria axe e regressões de teclado/layout
     server.test.js         Testes de acesso, segurança e MIME do servidor E2E
+docs/
+  ROTEIRO-ACESSIBILIDADE-MANUAL.md Roteiro futuro para NVDA, teclado e zoom
 FASE-6-RELATORIO.md Registro dos testes e resultados da Fase 6
 FASE-7-RELATORIO.md Registro da automação de interface e dos resultados da Fase 7
 FASE-8-RELATORIO.md Registro da refatoração e qualidade da Fase 8
 FASE-8-1-RELATORIO.md Registro dos ajustes de consolidação da Fase 8.1
 FASE-8-2-RELATORIO.md Registro da remoção do auxiliar legado da Fase 8.2
 FASE-9-RELATORIO.md Registro da importação de backup
+FASE-10-RELATORIO.md Registro da auditoria e correções de acessibilidade
 package.json    Tipo de módulo ES, scripts e dependências de desenvolvimento
 package-lock.json Versões reproduzíveis das dependências de desenvolvimento
 README.md       Documentação do projeto
 ```
-
-Não há uma pasta `docs/` neste estado do repositório; os documentos de fase ficam na raiz.
 
 ## Executar localmente
 
@@ -170,13 +172,16 @@ npm run format
 
 O servidor E2E escuta somente em `127.0.0.1` numa porta efêmera e atende arquivos de `index.html`, `style.css`, `editorial.css`, `JavaScript/` e `assets/`, sem lista de módulos individuais. Ele restringe caminhos à raiz permitida, bloqueia arquivos ocultos e áreas de teste/dependências, e aceita somente `GET` e `HEAD`. Cada caso cria um contexto Playwright novo, com `localStorage` isolado e descartado ao fechar; nenhum perfil habitual ou dado persistido do usuário é usado. Em falhas E2E, capturas de tela são gravadas em `test-results/` (diretório ignorado pelo Git); os diagnósticos de console, erros JavaScript, requisições falhas e respostas HTTP de erro aparecem na saída do runner.
 
+O teste axe falha em violações de impacto `serious` e `critical`; outros impactos e resultados `incomplete` são registrados no relatório da Fase 10. Essa matriz cobre apenas as telas, temas, dimensões e regras configuradas. Ela não é uma auditoria completa, não garante conformidade WCAG e não substitui NVDA, navegação manual por teclado nem zoom real do navegador. O roteiro para essas verificações está em `docs/ROTEIRO-ACESSIBILIDADE-MANUAL.md`; os passos manuais ainda não foram executados.
+
 Categorias cobertas:
 
 - **Unitários:** validação/cadastro, normalização de pesquisa, filtros combinados, ordenação, priorização e cálculos de indicadores.
 - **Integração:** armazenamento versionado, migração com backup, operações de status, histórico e falhas de gravação sem atualização parcial.
-- **Importação de backup:** envelope/versionamento, limite de arquivo, validação de registros/histórico, duplicidades/conflitos, preservação da coleção e rollback de falha.
+- **Importação de backup:** envelope/versionamento, limite de arquivo, validação de registros/histórico, duplicidades/conflitos, retenção de cópias, preservação da coleção e rollback de falha.
 - **Regressão:** preservação de dados corrompidos/incompatíveis, separação entre conclusão e recebimento, bloqueio de transições indevidas e ausência de mutação dos dados na consulta.
 - **Interface E2E:** inicialização, navegação, formulários e persistência, busca/filtros, transições pelo UI, histórico/detalhes, texto HTML literal, erros de navegador, menu por teclado e larguras 320, 360, 390, 768 e 1280 px.
+- **Acessibilidade automatizada:** axe nas telas públicas e principais estados da aplicação, nos temas claro/escuro e em viewports 1280×900 e 360×740; regressões E2E de foco de rota, resumo de erros, diálogos, alvos de toque e layout estreito com texto ampliado.
 - **Importação E2E:** exportar, limpar o armazenamento isolado e reimportar; cancelar por botão/Escape sem gravar; rejeitar arquivo inválido.
 - **Servidor E2E:** acesso a módulos criados sob demanda, bloqueio de traversal/arquivos privados, métodos HTTP permitidos e MIME JavaScript.
 
@@ -194,7 +199,8 @@ Uma abertura sem dados continua começando com uma coleção vazia. As ações d
 
 - **Exportar backup (JSON):** baixa uma cópia versionada das solicitações, incluindo estados e histórico.
 - **Importar backup (JSON):** seleciona um arquivo `.json` exportado pelo NEXUS SOCIAL, analisa e pré-visualiza quantas solicitações serão adicionadas, ignoradas por duplicidade ou descartadas por invalidade. Só grava após confirmação explícita. A importação é aditiva: não substitui nem remove registros atuais; duplicidades são comparadas por identificador e, quando ausente, por título. Conflitos em que o identificador existe com outro conteúdo não são importados. Antes de acrescentar registros, o estado atual é copiado para uma chave `nexusSocial.requests.backup.import.<timestamp>`. Se a gravação falhar, a coleção é restaurada e a cópia temporária da operação é removida.
-- O arquivo é limitado a **5 MB** e precisa ter `schemaVersion: 2` e uma coleção `requests`; versões desconhecidas, JSON inválido e registros com campos ou histórico inconsistentes são rejeitados ou listados como inválidos. Os dados do arquivo são tratados como entrada não confiável e exibidos como texto. Uma cópia de segurança anterior à importação pode ocupar espaço adicional no armazenamento local; se não houver espaço suficiente, a operação é cancelada com erro.
+- Após uma importação gravada com sucesso, são mantidas as **3 cópias de importação válidas mais recentes**; cópias antigas desse prefixo são removidas para limitar o uso de espaço do `localStorage`. Chaves malformadas são ignoradas e preservadas. A limpeza nunca remove cópias de migração `nexusSocial.requests.backup.v1.`, a coleção atual `nexusSocial.requests` nem a preferência `nexusSocial.theme`. Falha na limpeza é informada discretamente no console e não desfaz a importação já concluída.
+- O arquivo é limitado a **5 MB** e precisa ter `schemaVersion: 2` e uma coleção `requests`; versões desconhecidas, JSON inválido e registros com campos ou histórico inconsistentes são rejeitados ou listados como inválidos. Os dados do arquivo são tratados como entrada não confiável e exibidos como texto. A cópia anterior à importação e a coleção atual podem ocupar espaço adicional no armazenamento local; se não houver espaço suficiente para gravar a cópia e a importação, a operação é cancelada com erro.
 - **Carregar exemplos:** após confirmação, **acrescenta** solicitações fictícias que ainda não existem (comparadas pelo título). Nunca altera, substitui nem remove solicitações existentes; os exemplos passam pela mesma validação e gravação do cadastro comum.
 
 O tema escolhido fica na chave separada `nexusSocial.theme`.
@@ -237,6 +243,8 @@ Esta versão não possui:
 - Garantia de integridade ou imutabilidade dos dados e do histórico.
 - Operação, suporte ou validação para atendimento de pessoas reais.
 
+Não há garantia de conformidade completa com WCAG. A checagem axe cobre uma parte dos critérios em combinações selecionadas; gradientes, imagens, transparências e outras situações podem exigir avaliação manual. Os testes E2E de escala de texto/layout não substituem a verificação de zoom real do navegador, e o roteiro manual ainda depende de execução com NVDA, teclado e navegadores.
+
 Não use este MVP para organizar uma operação real de doações ou tomar decisões sobre acesso à ajuda.
 
 ## Próximas versões possíveis
@@ -250,4 +258,4 @@ Esses itens são possibilidades futuras, não funcionalidades incluídas no MVP.
 
 ## Validação
 
-A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md) e [Fase 9](./FASE-9-RELATORIO.md) para resultados efetivamente executados e limitações.
+A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md), [Fase 9](./FASE-9-RELATORIO.md) e [Fase 10](./FASE-10-RELATORIO.md) para resultados efetivamente executados e limitações.

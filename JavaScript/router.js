@@ -62,8 +62,10 @@ export function navigateTo(view, id = null) {
 // handler(route, { initial }) roda na carga da página e a cada mudança de endereço
 // (inclusive o botão voltar/avançar do navegador).
 export function startRouter(handler) {
-  window.addEventListener("hashchange", () =>
-    handler(parseHash(), { initial: false }),
-  );
+  window.addEventListener("hashchange", () => {
+    if (!window.location.hash || window.location.hash.startsWith("#/")) {
+      handler(parseHash(), { initial: false });
+    }
+  });
   handler(parseHash(), { initial: true });
 }

@@ -11,6 +11,7 @@ import {
 // nexusSocial.requests stores the versioned collection; migration backups use nexusSocial.requests.backup.v1.<timestamp>.
 export const STORAGE_KEY = "nexusSocial.requests";
 export const SCHEMA_VERSION = 2;
+const MAX_IMPORT_BACKUPS = 3;
 
 export class StorageError extends Error {
   constructor(message, code, cause) {
@@ -503,14 +504,77 @@ function makeCurrentBackupKey(storage) {
 }
 
 function makeImportBackupKey(storage) {
-  const base = `${STORAGE_KEY}.backup.import.${new Date().toISOString().replace(/[:.]/g, "-")}`;
-  let key = base;
-  let suffix = 1;
-  while (storage.getItem(key) !== null) {
-    key = `${base}.${suffix}`;
-    suffix += 1;
+  const isoTimestamp = new Date().toISOString();
+  const timestamp = isoTimestamp.replace(/[:.]/g, "-");
+  const milliseconds = Date.parse(isoTimestamp);
+  const base = `${STORAGE_KEY}.backup.import.${timestamp}`;
+  let maxSequence = -1;
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (typeof key !== "string" || !key.startsWith(base)) {
+      continue;
+    }
+
+    const parsed = getImportBackupTimestamp(key);
+    if (parsed?.milliseconds === milliseconds) {
+      maxSequence = Math.max(maxSequence, parsed.sequence);
+    }
   }
-  return key;
+  if (maxSequence >= Number.MAX_SAFE_INTEGER) {
+    throw new Error(
+      "Não há sequência segura disponível para a cópia de importação.",
+    );
+  }
+  return maxSequence < 0 ? base : `${base}.${maxSequence + 1}`;
+}
+
+function getImportBackupTimestamp(key) {
+  const match = key.match(
+    /^nexusSocial\.requests\.backup\.import\.(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z(?:\.([1-9]\d*))?$/,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const timestamp = `${match[1]}T${match[2]}:${match[3]}:${match[4]}.${match[5]}Z`;
+  const milliseconds = Date.parse(timestamp);
+  if (
+    !Number.isFinite(milliseconds) ||
+    new Date(milliseconds).toISOString() !== timestamp
+  ) {
+    return null;
+  }
+
+  const sequence = Number(match[6] ?? 0);
+  if (!Number.isSafeInteger(sequence)) {
+    return null;
+  }
+
+  return { milliseconds, sequence };
+}
+
+function pruneImportBackups(storage) {
+  const prefix = `${STORAGE_KEY}.backup.import.`;
+  const backups = [];
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (typeof key !== "string" || !key.startsWith(prefix)) {
+      continue;
+    }
+
+    const timestamp = getImportBackupTimestamp(key);
+    if (timestamp) {
+      backups.push({ key, ...timestamp });
+    }
+  }
+
+  backups.sort(
+    (left, right) =>
+      left.milliseconds - right.milliseconds || left.sequence - right.sequence,
+  );
+  for (const backup of backups.slice(0, -MAX_IMPORT_BACKUPS)) {
+    storage.removeItem(backup.key);
+  }
 }
 
 function stableSerialize(value) {
@@ -684,6 +748,15 @@ export function importRequests(requests, { confirmed = false } = {}) {
           ? "quota-exceeded"
           : "import-write-failed",
       cause,
+    );
+  }
+
+  try {
+    pruneImportBackups(storage);
+  } catch (error) {
+    console.warn(
+      "A importação foi gravada, mas não foi possível limpar as cópias de segurança antigas.",
+      error,
     );
   }
 

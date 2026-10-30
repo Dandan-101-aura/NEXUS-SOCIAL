@@ -49,6 +49,9 @@ export function getRequestStatusTotals(requests) {
 export function renderDashboard(requests) {
   const container = document.querySelector("#dashboard-stats");
   const totals = getRequestStatusTotals(requests);
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   container.replaceChildren();
   for (const status of STATUS_ORDER) {
@@ -62,7 +65,7 @@ export function renderDashboard(requests) {
     const count = document.createElement("p");
     count.className = "stat-value";
     count.textContent = "0";
-    if (container.closest("[hidden]")) {
+    if (container.closest("[hidden]") || reduceMotion) {
       count.textContent = String(totals[status]);
     } else {
       animateCount(count, totals[status]);

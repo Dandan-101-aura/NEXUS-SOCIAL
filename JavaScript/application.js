@@ -220,7 +220,7 @@ function showView(viewName, moveFocus) {
     document.title = `${VIEW_TITLES.home} | NEXUS SOCIAL`;
     closeMobileNavigation();
     if (moveFocus) {
-      publicHome.focus({ preventScroll: true });
+      document.querySelector("#public-title").focus({ preventScroll: true });
       window.scrollTo({ top: 0 });
     }
     return;
@@ -258,7 +258,7 @@ function showView(viewName, moveFocus) {
   closeMobileNavigation();
 
   if (moveFocus) {
-    mainContent.focus({ preventScroll: true });
+    targetView.querySelector("h1").focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
   }
 }
@@ -312,6 +312,32 @@ function openActionDialog(action, requestId, opener) {
     actionReason.labels[0].textContent = configuration.reasonLabel;
   }
   actionDialog.showModal();
+  document.querySelector("#action-dialog-cancel").focus();
+}
+
+function keepFocusInsideDialog(dialog, event) {
+  if (event.key !== "Tab") {
+    return;
+  }
+  const focusable = [
+    ...dialog.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ].filter((element) => !element.hidden && element.getClientRects().length > 0);
+  if (focusable.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function handleAction(button) {
@@ -358,6 +384,12 @@ function addSampleRequests() {
 }
 
 function bindActionDialog() {
+  actionDialog.addEventListener("keydown", (event) =>
+    keepFocusInsideDialog(actionDialog, event),
+  );
+  importDialog.addEventListener("keydown", (event) =>
+    keepFocusInsideDialog(importDialog, event),
+  );
   document
     .querySelector("#action-dialog-cancel")
     .addEventListener("click", () => actionDialog.close());

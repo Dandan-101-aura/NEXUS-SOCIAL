@@ -13,6 +13,8 @@ const descriptionInput = document.querySelector("#request-description");
 const descriptionCounter = document.querySelector(
   "#request-description-counter",
 );
+const errorSummary = document.querySelector("#request-error-summary");
+const errorSummaryList = document.querySelector("#request-error-summary-list");
 const profileSelect = document.querySelector("#demo-profile");
 const submitButton = requestForm.querySelector("#request-submit");
 
@@ -26,6 +28,11 @@ function clearFieldError(field) {
     error.textContent = "";
   }
   field.removeAttribute("aria-invalid");
+  const summaryItem = [...errorSummaryList.children].find(
+    (item) => item.dataset.fieldName === field.name,
+  );
+  summaryItem?.remove();
+  errorSummary.hidden = errorSummaryList.childElementCount === 0;
 }
 
 function setFieldError(field, message) {
@@ -42,6 +49,8 @@ function clearFieldErrors() {
       clearFieldError(field);
     }
   }
+  errorSummaryList.replaceChildren();
+  errorSummary.hidden = true;
 }
 
 function showFieldErrors(errors) {
@@ -50,12 +59,21 @@ function showFieldErrors(errors) {
     const field = requestForm.elements.namedItem(fieldName);
     if (field instanceof HTMLElement) {
       setFieldError(field, message);
+      const item = document.createElement("li");
+      item.dataset.fieldName = fieldName;
+      const link = document.createElement("a");
+      link.href = `#${encodeURIComponent(field.id)}`;
+      link.textContent = `${field.labels[0].textContent.trim()}: ${message}`;
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        field.focus();
+      });
+      item.append(link);
+      errorSummaryList.append(item);
     }
   }
-  Object.keys(errors)
-    .map((name) => requestForm.elements.namedItem(name))
-    .find((field) => field instanceof HTMLElement)
-    ?.focus();
+  errorSummary.hidden = false;
+  errorSummary.focus();
 }
 
 function readFormValues() {

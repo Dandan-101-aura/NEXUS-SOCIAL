@@ -24,7 +24,10 @@ export function showToast(message, type = "info", { duration, key } = {}) {
   const total = duration ?? (type === "error" ? 8000 : 4500);
   const toast = document.createElement("div");
   toast.className = `toast toast-${TOAST_ICONS[type] ? type : "info"}`;
-  toast.setAttribute("role", type === "error" ? "alert" : "status");
+  const isError = type === "error";
+  toast.setAttribute("role", isError ? "alert" : "status");
+  toast.setAttribute("aria-live", isError ? "assertive" : "polite");
+  toast.setAttribute("aria-atomic", "true");
 
   const iconWrap = document.createElement("span");
   iconWrap.className = "toast-icon";

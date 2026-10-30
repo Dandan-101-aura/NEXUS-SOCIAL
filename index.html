@@ -39,12 +39,7 @@
   </head>
 
   <body>
-    <main
-      class="public-home"
-      id="public-home"
-      aria-labelledby="public-title"
-      tabindex="-1"
-    >
+    <div class="public-home" id="public-home">
       <a class="skip-link" href="#public-content"
         >Pular para o conteúdo principal</a
       >
@@ -67,10 +62,15 @@
         </nav>
       </header>
 
-      <div class="public-content" id="public-content" tabindex="-1">
+      <main
+        class="public-content"
+        id="public-content"
+        aria-labelledby="public-title"
+        tabindex="-1"
+      >
         <section class="public-hero" aria-labelledby="public-title">
           <div class="public-hero-copy">
-            <h1 id="public-title">
+            <h1 id="public-title" tabindex="-1">
               A ajuda certa.<br /><em>No momento certo.</em>
             </h1>
             <p>
@@ -98,6 +98,7 @@
           <figure class="public-hero-visual">
             <div
               class="public-panel-preview"
+              role="group"
               aria-label="Prévia ilustrativa do painel e dos três perfis da demonstração"
             >
               <h2>O que você pode experimentar</h2>
@@ -168,16 +169,18 @@
             </li>
           </ol>
         </section>
-      </div>
+      </main>
 
       <footer class="public-footer">
         <span>NEXUS SOCIAL · A ajuda certa. No momento certo.</span>
         <span>Projeto demonstrativo · dados fictícios e locais</span>
       </footer>
-    </main>
+    </div>
 
     <div class="app-shell" hidden>
-      <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+      <nav aria-label="Atalhos de navegação">
+        <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+      </nav>
       <aside
         class="sidebar"
         id="site-navigation"
@@ -270,7 +273,7 @@
           </div>
           <p class="topbar-tagline">A ajuda certa. No momento certo.</p>
           <label class="profile-control" for="demo-profile">
-            Perfil
+            <span class="profile-label">Perfil</span>
             <select id="demo-profile" name="demo-profile">
               <option value="requester">Solicitante</option>
               <option value="volunteer">Voluntário</option>
@@ -297,7 +300,7 @@
             <div class="page-heading">
               <div>
                 <p class="eyebrow">VISÃO GERAL</p>
-                <h1 id="dashboard-title">Painel principal</h1>
+                <h1 id="dashboard-title" tabindex="-1">Painel principal</h1>
                 <p class="page-description">
                   Um espaço para acompanhar solicitações de forma organizada e
                   transparente.
@@ -528,7 +531,7 @@
             <div class="page-heading">
               <div>
                 <p class="eyebrow">ACOMPANHAMENTO</p>
-                <h1 id="requests-title">Solicitações</h1>
+                <h1 id="requests-title" tabindex="-1">Solicitações</h1>
                 <p class="page-description">
                   Consulte e acompanhe os pedidos cadastrados nesta
                   demonstração.
@@ -626,13 +629,27 @@
             <div class="page-heading">
               <div>
                 <p class="eyebrow">REGISTRO</p>
-                <h1 id="new-request-title">Cadastrar solicitação</h1>
+                <!-- prettier-ignore -->
+                <h1 id="new-request-title" tabindex="-1">Cadastrar solicitação</h1>
                 <p class="page-description">
                   Registre um pedido fictício de alimentos ou itens básicos.
                 </p>
               </div>
             </div>
             <form class="form-card" id="request-form" novalidate>
+              <div
+                class="form-error-summary"
+                id="request-error-summary"
+                role="alert"
+                aria-labelledby="request-error-summary-title"
+                tabindex="-1"
+                hidden
+              >
+                <h2 id="request-error-summary-title">
+                  Revise os campos destacados
+                </h2>
+                <ul id="request-error-summary-list"></ul>
+              </div>
               <h2>Dados da solicitação</h2>
               <p class="form-intro">
                 Não inclua endereço exato, documentos pessoais ou telefone
@@ -768,7 +785,8 @@
             <div class="page-heading">
               <div>
                 <p class="eyebrow">ACOMPANHAMENTO</p>
-                <h1 id="details-title">Detalhes da solicitação</h1>
+                <!-- prettier-ignore -->
+                <h1 id="details-title" tabindex="-1">Detalhes da solicitação</h1>
                 <p class="page-description">
                   Informações e atualizações de uma solicitação selecionada.
                 </p>
@@ -801,7 +819,7 @@
             <div class="page-heading">
               <div>
                 <p class="eyebrow">TRANSPARÊNCIA</p>
-                <h1 id="history-title">Histórico</h1>
+                <h1 id="history-title" tabindex="-1">Histórico</h1>
                 <p class="page-description">
                   Registro de alterações relacionadas às solicitações.
                 </p>
@@ -837,16 +855,12 @@
       id="navigation-announcement"
       aria-live="polite"
     ></div>
-    <div
-      class="toast-region"
-      id="toast-region"
-      aria-live="polite"
-      aria-atomic="false"
-    ></div>
+    <div class="toast-region" id="toast-region"></div>
 
     <dialog
       class="action-dialog"
       id="action-dialog"
+      aria-modal="true"
       aria-labelledby="action-dialog-title"
     >
       <form id="action-dialog-form" novalidate>
@@ -892,6 +906,7 @@
     <dialog
       class="action-dialog import-dialog"
       id="import-dialog"
+      aria-modal="true"
       aria-labelledby="import-dialog-title"
       aria-describedby="import-dialog-description"
     >

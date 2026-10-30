@@ -23,7 +23,7 @@
   --surface: #ffffff;
   --surface-2: #f1f5f9;
   --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border-strong: #64748b;
   --text: #0f172a;
   --muted: #475569;
   --glass: rgb(255 255 255 / 85%);
@@ -32,9 +32,9 @@
 
   /* Cores das faixas de categoria limpas e harmoniosas */
   --cat-alimentos-bg: #e4f7fb;
-  --cat-alimentos-fg: #0789a8;
+  --cat-alimentos-fg: #06758f;
   --cat-roupas-bg: #e8f4fa;
-  --cat-roupas-fg: #087da8;
+  --cat-roupas-fg: #066b88;
   --cat-higiene-bg: #e6f8f7;
   --cat-higiene-fg: #067b86;
   --cat-abrigo-bg: #fefce8;
@@ -46,7 +46,7 @@
   --surface: #0b1b2d;
   --surface-2: #12283b;
   --border: #20374a;
-  --border-strong: #31586c;
+  --border-strong: #527589;
   --text: #e3f2f8;
   --muted: #a0bac8;
   --glass: rgb(11 27 45 / 82%);
