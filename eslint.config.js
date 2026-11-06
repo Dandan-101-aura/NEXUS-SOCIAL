@@ -1,6 +1,7 @@
 const browserGlobals = Object.fromEntries(
   [
     "Blob",
+    "Animation",
     "CSS",
     "CustomEvent",
     "DOMException",
@@ -10,7 +11,11 @@ const browserGlobals = Object.fromEntries(
     "HashChangeEvent",
     "HTMLElement",
     "HTMLInputElement",
+    "Image",
+    "IntersectionObserver",
+    "KeyframeEffect",
     "MutationObserver",
+    "NodeFilter",
     "URL",
     "URLSearchParams",
     "cancelAnimationFrame",

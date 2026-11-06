@@ -92,6 +92,26 @@
   line-height: 1.65;
 }
 
+.public-action-cycle {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 9px;
+  margin: -12px 0 22px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--primary-text);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.public-action-cycle svg {
+  width: 18px;
+  height: 18px;
+}
+
 .public-hero-actions {
   flex-wrap: wrap;
   gap: 18px 26px;
@@ -103,6 +123,10 @@
   align-items: flex-start;
   gap: 10px;
   margin: 28px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
   color: var(--muted);
   font-size: 0.83rem;
   line-height: 1.5;

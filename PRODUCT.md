@@ -30,7 +30,7 @@ A transparência é o diferencial do produto: cada ação gera um evento em um h
 
 ## Operating Context
 
-A experiência é web adaptativa para celular, tablet e desktop. Em telas pequenas, o menu lateral vira uma gaveta. O uso é local, sem autenticação real. A publicação não tem destino definido; por ser estática, a aplicação pode ser hospedada em serviços de hospedagem estática. Os avisos de demonstração devem permanecer visíveis se houver publicação.
+A experiência é web adaptativa para celular, tablet e desktop. Em telas de até 680 px, a navegação lateral é substituída pelo dock “Navegação rápida”, com atalhos para painel, solicitações, cadastro e histórico. Os detalhes continuam acessíveis a partir das solicitações; perfil, tema e ações de backup permanecem disponíveis. O uso é local, sem autenticação real. A publicação não tem destino definido; por ser estática, a aplicação pode ser hospedada em serviços de hospedagem estática. Os avisos de demonstração devem permanecer visíveis se houver publicação.
 
 ## Capabilities and Constraints
 

@@ -6,11 +6,13 @@ import {
   getServerBaseUrl,
   getStoredRequests,
   openApp,
+  clickPrimaryNavLink,
   runAppTest,
 } from "./support.js";
 
 test("shows the public Hero and opens the demonstration", async (t) => {
   const { diagnostics, page } = await openApp(t);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(getServerBaseUrl(), { waitUntil: "networkidle" });
 
   assert.equal(await page.locator("#public-home").isVisible(), true);
@@ -19,6 +21,18 @@ test("shows the public Hero and opens the demonstration", async (t) => {
     /A ajuda certa\.\s*No momento certo\./,
   );
   assert.equal(await page.locator(".app-shell").isVisible(), false);
+  assert.equal(
+    await page.locator(".public-action-cycle").getAttribute("aria-hidden"),
+    "true",
+  );
+  assert.equal(
+    await page.locator("#public-action-cycle-copy").textContent(),
+    "Cadastre um pedido fictício",
+  );
+  assert.equal(
+    await page.evaluate(() => document.activeElement === document.body),
+    true,
+  );
 
   await page
     .getByRole("link", { name: /Abrir a demonstração/ })
@@ -49,7 +63,7 @@ test("starts empty, renders indicators and navigates across main views", async (
       ["history", "Histórico"],
       ["dashboard", "Painel principal"],
     ]) {
-      await page.locator(`[data-view="${view}"]`).click();
+      await clickPrimaryNavLink(page, view);
       await page.locator(`#view-${view}`).waitFor({ state: "visible" });
       assert.equal(
         await page
@@ -75,7 +89,7 @@ test("starts empty, renders indicators and navigates across main views", async (
 
 test("validates form errors, creates safe text content and persists after reload", async (t) =>
   runAppTest(t, async ({ diagnostics, page }) => {
-    await page.locator('[data-view="new-request"]').click();
+    await clickPrimaryNavLink(page, "new-request");
 
     await page.getByRole("button", { name: "Salvar solicitação" }).click();
     assert.match(
@@ -129,7 +143,7 @@ test("validates form errors, creates safe text content and persists after reload
       "1",
     );
 
-    await page.locator('[data-view="requests"]').click();
+    await clickPrimaryNavLink(page, "requests");
     assert.equal(
       await page
         .locator("#request-list .request-card h3")
@@ -185,7 +199,7 @@ test("searches, combines filters, reports no results and clears all criteria", a
       urgency: "baixa",
     });
 
-    await page.locator('[data-view="requests"]').click();
+    await clickPrimaryNavLink(page, "requests");
     await page.getByLabel("Pesquisar").fill("  ARROZ   E FEIJÃO ");
     assert.deepEqual(
       await page.locator("#request-list .request-card h3").allTextContents(),
@@ -215,7 +229,7 @@ test("workflow actions update status, separate receipt and preserve history", as
     const request = await createRequestThroughForm(page, {
       title: "Fluxo de atendimento",
     });
-    await page.locator('[data-view="requests"]').click();
+    await clickPrimaryNavLink(page, "requests");
 
     await page.getByLabel("Perfil").selectOption("volunteer");
     await page
@@ -311,7 +325,7 @@ test("workflow actions update status, separate receipt and preserve history", as
       await page.locator("#selected-request-details h2").textContent(),
       request.title,
     );
-    await page.locator('[data-view="history"]').click();
+    await clickPrimaryNavLink(page, "history");
     assert.equal(await page.locator("#history-list .history-entry").count(), 6);
     assertNoBrowserErrors(assert, diagnostics);
   }));
@@ -327,7 +341,7 @@ test("withdrawal, cancellation and suspension require valid confirmation flows",
     const suspension = await createRequestThroughForm(page, {
       title: "Suspensão",
     });
-    await page.locator('[data-view="requests"]').click();
+    await clickPrimaryNavLink(page, "requests");
 
     await page.getByLabel("Perfil").selectOption("volunteer");
     await page
@@ -448,28 +462,16 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
         true,
       );
 
-      await page.locator(".menu-toggle").click();
-      assert.equal(
-        await page.locator(".menu-toggle").getAttribute("aria-expanded"),
-        "true",
-      );
+      assert.equal(await page.locator(".menu-toggle").count(), 0);
       assert.equal(
         await page
           .locator("#site-navigation")
           .evaluate((navigation) => navigation.inert),
-        false,
-      );
-      await page.keyboard.press("Escape");
-      assert.equal(
-        await page.locator(".menu-toggle").getAttribute("aria-expanded"),
-        "false",
-      );
-      assert.equal(
-        await page
-          .locator(":focus")
-          .evaluate((element) => element.classList.contains("menu-toggle")),
         true,
       );
+      const dock = page.getByRole("navigation", { name: "Navegação rápida" });
+      assert.equal(await dock.isVisible(), true);
+      assert.equal(await dock.locator("a[data-view]").count(), 4);
 
       assert.equal(
         await page.evaluate(() =>
@@ -486,7 +488,7 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
       await page.emulateMedia({ reducedMotion: "reduce" });
       assert.equal(
         await page
-          .locator(".nav-link")
+          .locator(".primary-nav .nav-link")
           .first()
           .evaluate((element) => getComputedStyle(element).transitionDuration),
         "1e-05s",
@@ -521,14 +523,30 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
               .slice(0, 10),
           })),
         );
-        assert.equal(
-          await page.locator(".profile-control select").isVisible(),
-          true,
-        );
+        assert.equal(await page.getByLabel("Perfil").isVisible(), true);
+        assert.equal(await page.locator("#theme-toggle").isVisible(), true);
+        assert.equal(await page.locator("#import-backup").isVisible(), true);
+        assert.equal(await page.locator("#export-backup").isVisible(), true);
         assert.equal(
           await page.locator("main .view:not([hidden]) h1").isVisible(),
           true,
         );
+        if (width <= 440) {
+          assert.equal(
+            await page
+              .locator(".demo-badge")
+              .evaluate((element) => getComputedStyle(element).display),
+            "none",
+          );
+        }
+        if (width <= 360) {
+          assert.equal(
+            await page
+              .locator(".topbar")
+              .evaluate((element) => getComputedStyle(element).gap),
+            "8px",
+          );
+        }
       }
       assert.ok(
         viewportResults.every(
@@ -536,6 +554,94 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
         ),
         `horizontal overflow by viewport: ${JSON.stringify(viewportResults)}`,
       );
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await createRequestThroughForm(page, {
+        title: "Detalhes alcançáveis em tela móvel",
+      });
+      await clickPrimaryNavLink(page, "requests");
+      const detailsLink = page.getByRole("button", {
+        name: "Ver detalhes",
+      });
+      let detailsFocusedByTab = false;
+      for (let count = 0; count < 60; count += 1) {
+        if (
+          await detailsLink.evaluate(
+            (element) => element === document.activeElement,
+          )
+        ) {
+          detailsFocusedByTab = true;
+          break;
+        }
+        await page.keyboard.press("Tab");
+      }
+      assert.equal(detailsFocusedByTab, true);
+      await page.keyboard.press("Enter");
+      await page.waitForFunction(
+        () => document.activeElement?.id === "details-title",
+      );
+      assert.equal(new URL(page.url()).hash.startsWith("#/solicitacao/"), true);
+      assertNoBrowserErrors(assert, diagnostics);
+    },
+    { width: 390, height: 844 },
+  ));
+
+test("mobile dock routes, active state, focus and keyboard navigation work", async (t) =>
+  runAppTest(
+    t,
+    async ({ diagnostics, page }) => {
+      const dock = page.getByRole("navigation", { name: "Navegação rápida" });
+      const primary = page.locator('nav[aria-label="Seções"]');
+      assert.notEqual(
+        await dock.getAttribute("aria-label"),
+        await primary.getAttribute("aria-label"),
+      );
+
+      for (const [view, route, titleId] of [
+        ["dashboard", "#/painel", "dashboard-title"],
+        ["requests", "#/solicitacoes", "requests-title"],
+        ["new-request", "#/cadastrar", "new-request-title"],
+        ["history", "#/historico", "history-title"],
+      ]) {
+        const startingRoute = view === "history" ? "#/painel" : "#/historico";
+        await page.goto(`${getServerBaseUrl()}${startingRoute}`, {
+          waitUntil: "networkidle",
+        });
+        const link = dock.locator(`[data-view="${view}"]`);
+        let focusedByTab = false;
+        for (let count = 0; count < 100; count += 1) {
+          if (
+            await link.evaluate((element) => element === document.activeElement)
+          ) {
+            focusedByTab = true;
+            break;
+          }
+          await page.keyboard.press("Tab");
+        }
+        assert.equal(focusedByTab, true, `${view} dock link is tab reachable`);
+        assert.equal(
+          await link.evaluate((element) => element.matches(":focus-visible")),
+          true,
+        );
+        assert.equal(await link.getAttribute("href"), route);
+        await page.keyboard.press("Enter");
+        await page.waitForFunction(
+          (targetRoute) => window.location.hash === targetRoute,
+          route,
+        );
+        await page.waitForFunction(
+          (targetTitle) => document.activeElement?.id === targetTitle,
+          titleId,
+        );
+        assert.equal(
+          await page.evaluate(() => document.activeElement?.id),
+          titleId,
+          `${view} navigation should focus its title`,
+        );
+        assert.equal(new URL(page.url()).hash, route);
+        assert.equal(await link.getAttribute("aria-current"), "page");
+      }
+
       assertNoBrowserErrors(assert, diagnostics);
     },
     { width: 390, height: 844 },
@@ -550,7 +656,7 @@ test("exports, clears isolated storage and additively imports a backup", async (
       description,
     });
 
-    await page.locator('[data-view="dashboard"]').click();
+    await clickPrimaryNavLink(page, "dashboard");
     await page.evaluate(() => {
       const createObjectURL = URL.createObjectURL.bind(URL);
       URL.createObjectURL = (blob) => {
@@ -603,7 +709,7 @@ test("exports, clears isolated storage and additively imports a backup", async (
     });
     assert.deepEqual(importBackup, { schemaVersion: 2, requests: [] });
 
-    await page.locator('[data-view="requests"]').click();
+    await clickPrimaryNavLink(page, "requests");
     assert.equal(
       await page.locator("#request-list .request-card h3").textContent(),
       title,
@@ -631,7 +737,7 @@ test("cancelling an import by button or Escape does not change stored data", asy
       localStorage.setItem("nexusSocial.requests", JSON.stringify(envelope));
     }, existing.id);
     await page.reload({ waitUntil: "networkidle" });
-    await page.locator('[data-view="dashboard"]').click();
+    await clickPrimaryNavLink(page, "dashboard");
     const before = await page.evaluate(() =>
       localStorage.getItem("nexusSocial.requests"),
     );

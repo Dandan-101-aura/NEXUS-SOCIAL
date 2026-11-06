@@ -156,29 +156,21 @@ h1 {
   border-radius: 22px;
 }
 
-/* Degradê esmeralda → slate: o texto fica sobre a parte escura, o rosto das pessoas sobre a clara. */
+/* Keep the image visible while maintaining a dark text backdrop across the card. */
 .welcome-overlay {
-  background:
-    linear-gradient(180deg, rgb(15 23 42 / 0%) 55%, rgb(15 23 42 / 62%) 100%),
-    linear-gradient(
-      90deg,
-      rgb(6 16 29 / 96%) 0%,
-      rgb(5 88 116 / 88%) 42%,
-      rgb(0 190 224 / 35%) 78%,
-      rgb(6 16 29 / 22%) 100%
-    );
+  background: linear-gradient(
+    90deg,
+    rgb(6 16 29 / 92%) 0%,
+    rgb(6 16 29 / 84%) 100%
+  );
 }
 
 :root[data-theme="dark"] .welcome-overlay {
-  background:
-    linear-gradient(180deg, rgb(2 6 23 / 0%) 50%, rgb(2 6 23 / 72%) 100%),
-    linear-gradient(
-      90deg,
-      rgb(6 16 29 / 97%) 0%,
-      rgb(5 88 116 / 90%) 44%,
-      rgb(0 190 224 / 38%) 80%,
-      rgb(6 16 29 / 30%) 100%
-    );
+  background: linear-gradient(
+    90deg,
+    rgb(2 6 23 / 94%) 0%,
+    rgb(2 6 23 / 88%) 100%
+  );
 }
 
 .welcome-copy h2 {

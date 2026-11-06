@@ -223,6 +223,16 @@ export function getServerBaseUrl() {
   return baseUrl;
 }
 
+export async function clickPrimaryNavLink(page, view) {
+  const navigationName = (await page.locator(".mobile-dock").isVisible())
+    ? "Navegação rápida"
+    : "Seções";
+  await page
+    .getByRole("navigation", { name: navigationName })
+    .locator(`[data-view="${view}"]`)
+    .click();
+}
+
 export async function openApp(t, viewport = { width: 1280, height: 900 }) {
   const context = await browser.newContext({ viewport, acceptDownloads: true });
   const page = await context.newPage();
@@ -297,7 +307,7 @@ export async function createRequestThroughForm(
     urgency = "media",
   },
 ) {
-  await page.locator('[data-view="new-request"]').click();
+  await clickPrimaryNavLink(page, "new-request");
   const form = page.locator("#request-form");
   await form.getByLabel("Título da solicitação").fill(title);
   await form.getByLabel("Descrição").fill(description);

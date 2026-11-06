@@ -26,6 +26,7 @@ Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvi
 
 - Página pública de apresentação com acesso explícito à demonstração.
 - Navegação entre painel, solicitações, cadastro, detalhes e histórico sem recarregar a aplicação.
+- Em telas até 680 px, a navegação lateral é substituída pelo dock “Navegação rápida” com atalhos para painel, solicitações, cadastro e histórico; detalhes continuam disponíveis pelo botão da solicitação. Perfil, tema e backup permanecem acessíveis.
 - Cadastro de solicitações de alimentos não perecíveis, produtos de higiene, roupas e itens básicos de uso cotidiano.
 - Validação de campos, quantidade, categoria, unidade, urgência e região aproximada.
 - Pesquisa por título, descrição ou categoria, com filtros combináveis por categoria, status e urgência.
@@ -53,8 +54,8 @@ Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvi
   settings.json Configuração legada de testes Python no VS Code, não usada pelo projeto JS
 assets/
   banner-solidariedade.jpg       Imagem de banner
-  background-dark.jpg            Fundo do tema escuro
-  background-light.jpg           Fundo do tema claro
+  background-dark.jpg            Fundo do tema escuro (origem não registrada)
+  background-light.jpg           Fundo do tema claro (origem não registrada)
   Logo Nexus Social em Gradiente Tecnológico.png  Logo em PNG
   nexus-social-logo.jpg          Logo em JPEG
 editorial.css   Estilos visuais complementares para cartões e seções editoriais
@@ -62,6 +63,7 @@ eslint.config.js Configuração flat do ESLint
 index.html      Estrutura semântica e áreas de navegação
 style.css       Identidade visual, temas claro/escuro, acessibilidade e responsividade
 public.css      Apresentação pública e Hero de entrada
+PRODUCT.md      Restrições, público e princípios do produto
 JavaScript/
   application.js Inicialização, roteamento e composição das telas
   backup.js      Exportação, validação/importação de backup e criação de exemplos
@@ -70,10 +72,12 @@ JavaScript/
   dashboard.js  Indicadores e seleção das solicitações recentes
   demo-data.js  Dados fictícios opcionais
   icons.js      Criação e hidratação de ícones SVG
+  public-hero.js Ciclo visual decorativo da apresentação pública
   queries.js    Consultas puras de pesquisa, filtros e ordenação
   requests.js   Modelo, validação de entrada e regras de negócio
   router.js     Navegação por hash
   script.js     Ponto de entrada mínimo da aplicação
+  specular-button.js Realce especular decorativo dos botões
   storage.js    Persistência, validação, versão do esquema e migração
   theme.js      Preferência de tema
   toast.js      Notificações da interface
@@ -104,6 +108,7 @@ FASE-8-1-RELATORIO.md Registro dos ajustes de consolidação da Fase 8.1
 FASE-8-2-RELATORIO.md Registro da remoção do auxiliar legado da Fase 8.2
 FASE-9-RELATORIO.md Registro da importação de backup
 FASE-10-RELATORIO.md Registro da auditoria e correções de acessibilidade
+FASE-10-3-RELATORIO.md Registro da estabilização visual e integração
 package.json    Tipo de módulo ES, scripts e dependências de desenvolvimento
 package-lock.json Versões reproduzíveis das dependências de desenvolvimento
 README.md       Documentação do projeto
