@@ -120,6 +120,15 @@ h1 {
   border-left: 4px solid var(--primary);
 }
 
+.demo-content-label {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .pull-quote blockquote {
   margin: 0;
   color: var(--text);

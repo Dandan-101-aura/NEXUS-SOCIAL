@@ -19,7 +19,7 @@ O MVP destina-se a demonstrações, avaliação de interface e aprendizagem sobr
 - JavaScript puro com módulos ES.
 - `localStorage` para persistência neste navegador.
 
-Não há frameworks, bibliotecas visuais, serviços externos, backend ou dependências de execução.
+Não há frameworks, bibliotecas visuais, serviços externos, backend ou dependências de execução. As fontes usadas pela interface são arquivos locais em `assets/fonts/`.
 Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvimento; o site não depende delas para funcionar.
 
 ## Funcionalidades
@@ -36,10 +36,10 @@ Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvi
 - Histórico local das ações e datas relevantes.
 - Renderização de texto fornecido pelo usuário como texto, sem interpretá-lo como HTML.
 - Mensagens de erro, sucesso, estados vazios e apresentação responsiva.
-- Histórias de impacto fictícias no painel, identificadas como conteúdo de demonstração e sem depoimentos de pessoas reais.
+- Histórias e citações fictícias no painel, identificadas como conteúdo de demonstração e sem depoimentos de pessoas reais.
 - Tema claro, escuro ou automático (segue o sistema), com alternância suave e preferência salva neste navegador.
 - Notificações flutuantes (toasts) que não empurram o conteúdo.
-- Rotas por hash: `#/inicio`, `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico` e `#/solicitacao/<id>` (link direto para os detalhes); sem rota, a apresentação pública é exibida e o botão voltar do navegador funciona entre as telas.
+- Rotas por hash: `#/inicio`, `#/painel`, `#/solicitacoes`, `#/cadastrar`, `#/historico`, `#/sobre-dados` e `#/solicitacao/<id>` (link direto para os detalhes); sem rota, a apresentação pública é exibida e o botão voltar do navegador funciona entre as telas.
 - Quantidade aceita vírgula ou ponto decimal (`2,5` ou `2.5`).
 - Contador de caracteres na descrição e validação de cada campo ao sair dele.
 - Exportação e importação aditiva de backup JSON, além da carga opcional de exemplos fictícios (veja "Persistência local").
@@ -53,11 +53,18 @@ Playwright, axe-core, ESLint e Prettier são dependências somente de desenvolvi
 .vscode/
   settings.json Configuração legada de testes Python no VS Code, não usada pelo projeto JS
 assets/
+  CREDITOS.md                    Inventário público de imagens e fontes
   banner-solidariedade.jpg       Imagem de banner
   background-dark.jpg            Fundo do tema escuro (origem não registrada)
-  background-light.jpg           Fundo do tema claro (origem não registrada)
+  background-light.jpg            Fundo do tema claro (origem não registrada)
   Logo Nexus Social em Gradiente Tecnológico.png  Logo em PNG
   nexus-social-logo.jpg          Logo em JPEG
+  fonts/
+    fonts.css                    Fontes locais e declarações @font-face
+    inter-normal-400.woff2       Fonte Inter variável
+    plus-jakarta-sans-normal-600.woff2  Fonte Plus Jakarta Sans variável
+    fraunces-normal-500.woff2    Fonte Fraunces variável
+    fraunces-italic-500.woff2    Fonte Fraunces itálica
 editorial.css   Estilos visuais complementares para cartões e seções editoriais
 eslint.config.js Configuração flat do ESLint
 index.html      Estrutura semântica e áreas de navegação
@@ -82,6 +89,7 @@ JavaScript/
   theme.js      Preferência de tema
   toast.js      Notificações da interface
   views/
+    data-privacy-view.js  Conteúdo da tela “Sobre os dados”
     panel-view.js        Renderização e eventos do painel
     requests-view.js     Renderização e eventos da lista de solicitações
     request-form-view.js Validação e eventos do formulário de cadastro
@@ -99,6 +107,7 @@ tests/
     app.test.js            Cenários E2E dos fluxos da interface
     accessibility.test.js  Auditoria axe e regressões de teclado/layout
     server.test.js         Testes de acesso, segurança e MIME do servidor E2E
+    publication.test.js    Guarda de origens externas e verificações da Fase 10.2
 docs/
   ROTEIRO-ACESSIBILIDADE-MANUAL.md Roteiro futuro para NVDA, teclado e zoom
 FASE-6-RELATORIO.md Registro dos testes e resultados da Fase 6
@@ -109,6 +118,7 @@ FASE-8-2-RELATORIO.md Registro da remoção do auxiliar legado da Fase 8.2
 FASE-9-RELATORIO.md Registro da importação de backup
 FASE-10-RELATORIO.md Registro da auditoria e correções de acessibilidade
 FASE-10-3-RELATORIO.md Registro da estabilização visual e integração
+FASE-10-2-RELATORIO.md Registro de pré-publicação responsável
 package.json    Tipo de módulo ES, scripts e dependências de desenvolvimento
 package-lock.json Versões reproduzíveis das dependências de desenvolvimento
 README.md       Documentação do projeto
@@ -190,7 +200,7 @@ Categorias cobertas:
 - **Importação E2E:** exportar, limpar o armazenamento isolado e reimportar; cancelar por botão/Escape sem gravar; rejeitar arquivo inválido.
 - **Servidor E2E:** acesso a módulos criados sob demanda, bloqueio de traversal/arquivos privados, métodos HTTP permitidos e MIME JavaScript.
 
-Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md) e [Fase 9](./FASE-9-RELATORIO.md) para resultados e decisões efetivamente registrados.
+Os testes E2E usam navegador real, mas não equivalem a uma auditoria completa de acessibilidade ou conformidade WCAG. Leitores de tela, contraste abrangente, diferentes motores de navegador e comportamento em dispositivos físicos continuam precisando de verificações manuais. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md), [Fase 9](./FASE-9-RELATORIO.md), [Fase 10](./FASE-10-RELATORIO.md), [Fase 10.2](./FASE-10-2-RELATORIO.md) e [Fase 10.3](./FASE-10-3-RELATORIO.md) para resultados e decisões efetivamente registrados.
 
 ## Persistência local
 
@@ -209,6 +219,12 @@ Uma abertura sem dados continua começando com uma coleção vazia. As ações d
 - **Carregar exemplos:** após confirmação, **acrescenta** solicitações fictícias que ainda não existem (comparadas pelo título). Nunca altera, substitui nem remove solicitações existentes; os exemplos passam pela mesma validação e gravação do cadastro comum.
 
 O tema escolhido fica na chave separada `nexusSocial.theme`.
+
+## Privacidade, conteúdo e licenças
+
+O NEXUS SOCIAL é uma demonstração local, sem fins comerciais; os pedidos, perfis, histórias e exemplos são fictícios. Não informe dados pessoais reais no formulário. Os dados permanecem neste navegador, em `nexusSocial.requests` e `nexusSocial.theme`, além de cópias locais de importação (até três) e eventuais cópias de migração. A aplicação não envia esses dados a servidores, não usa cookies ou analytics e não carrega scripts, fontes ou outros recursos de terceiros; as fontes disponíveis são arquivos locais do projeto. Backups exportados são baixados para o dispositivo de quem os exporta.
+
+Use **Sobre os dados** no rodapé ou abra `#/sobre-dados` para consultar o que fica no navegador e como apagar os dados, limpando os dados deste site nas configurações do navegador. O inventário de origem, autoria e licença das imagens e fontes está em [assets/CREDITOS.md](./assets/CREDITOS.md); informações não verificáveis foram deixadas como pendência para o autor. Não há afirmação de conformidade legal. O texto informativo da tela não substitui orientação jurídica.
 
 ## Estados e regras
 
@@ -263,4 +279,4 @@ Esses itens são possibilidades futuras, não funcionalidades incluídas no MVP.
 
 ## Validação
 
-A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md), [Fase 9](./FASE-9-RELATORIO.md) e [Fase 10](./FASE-10-RELATORIO.md) para resultados efetivamente executados e limitações.
+A suíte unitária e de integração em `tests/` pode ser executada com `npm test`; os fluxos de interface automatizados podem ser executados com `npm run test:e2e`. `npm run lint` e `npm run format:check` verificam, respectivamente, as regras estáticas e o padrão Prettier; `npm run format` aplica a formatação. Essas verificações não substituem uma auditoria completa de acessibilidade nem testes em todos os navegadores e dispositivos. Consulte os relatórios [Fase 6](./FASE-6-RELATORIO.md), [Fase 7](./FASE-7-RELATORIO.md), [Fase 8](./FASE-8-RELATORIO.md), [Fase 8.1](./FASE-8-1-RELATORIO.md), [Fase 8.2](./FASE-8-2-RELATORIO.md), [Fase 9](./FASE-9-RELATORIO.md), [Fase 10](./FASE-10-RELATORIO.md), [Fase 10.2](./FASE-10-2-RELATORIO.md) e [Fase 10.3](./FASE-10-3-RELATORIO.md) para resultados efetivamente executados e limitações.

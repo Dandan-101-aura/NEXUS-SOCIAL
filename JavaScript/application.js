@@ -34,6 +34,7 @@ import { bindHistoryView, renderHistoryView } from "./views/history-view.js";
 import { bindPanelView, renderPanelView } from "./views/panel-view.js";
 import { bindRequestForm } from "./views/request-form-view.js";
 import { bindRequestsView, renderRequestsView } from "./views/requests-view.js";
+import { renderDataPrivacyView } from "./views/data-privacy-view.js";
 import { ROLE_LABELS } from "./views/view-utils.js";
 
 const views = [...document.querySelectorAll(".view")];
@@ -79,6 +80,7 @@ const VIEW_TITLES = Object.freeze({
   "new-request": "Cadastrar solicitação",
   details: "Detalhes da solicitação",
   history: "Histórico",
+  "about-data": "Sobre os dados",
 });
 
 const AVATAR_COLORS = Object.freeze({
@@ -226,7 +228,7 @@ function showView(viewName, moveFocus) {
   const targetLink = navigationLinks.find(
     (link) => link.dataset.view === viewName,
   );
-  if (!targetView || !targetLink) {
+  if (!targetView) {
     return;
   }
 
@@ -686,6 +688,7 @@ export function startApplication() {
   initSpecularButtons();
   initTheme(document.querySelector("#theme-toggle"));
   renderCommunityStories(document.querySelector("#community-stories"));
+  renderDataPrivacyView(document.querySelector("#data-privacy-content"));
 
   bindNavigation();
   bindRequestForm({

@@ -70,8 +70,12 @@
 }
 
 .public-hero h1 {
+  width: fit-content;
   max-width: 11ch;
-  margin: 0 0 24px;
+  margin: 0 0 24px -12px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--surface);
   font-family: var(--font-serif);
   font-size: clamp(3.2rem, 6vw, 5.65rem);
   font-weight: 600;
@@ -283,12 +287,23 @@
 
 .public-footer {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 0.76rem;
+}
+
+.public-footer a {
+  color: var(--primary-text);
+  text-underline-offset: 3px;
+}
+
+.public-footer a:hover {
+  text-decoration-thickness: 2px;
 }
 
 .public-brand:focus-visible,

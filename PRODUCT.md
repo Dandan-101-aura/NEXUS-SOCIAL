@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-HTML5, CSS3 e JavaScript puro com módulos ES, sem framework e sem etapa de build. Os dados ficam no `localStorage`. A aplicação precisa ser servida por HTTP; não funciona abrindo o arquivo diretamente. `node:test` e Playwright são usados apenas no desenvolvimento. A única dependência externa de runtime são as fontes do Google Fonts. Destino de publicação ainda não definido; GitHub Pages e Vercel são opções sugeridas para hospedagem estática.
+HTML5, CSS3 e JavaScript puro com módulos ES, sem framework e sem etapa de build. Os dados ficam no `localStorage`. A aplicação precisa ser servida por HTTP; não funciona abrindo o arquivo diretamente. `node:test` e Playwright são usados apenas no desenvolvimento. As fontes são arquivos locais em `assets/fonts/`; não há requisições da aplicação a serviços de terceiros. Destino de publicação ainda não definido; GitHub Pages e Vercel são opções sugeridas para hospedagem estática.
 
 ## Users
 
@@ -20,7 +20,7 @@ O público real do projeto são pessoas que avaliam a interface, fazem demonstra
 
 ## Product Purpose
 
-O NEXUS SOCIAL é uma demonstração local de uma rede de apoio comunitário para organizar solicitações fictícias de alimentos e itens básicos, acompanhar o atendimento e consultar o histórico de cada pedido. Seu slogan é “A ajuda certa. No momento certo.”
+O NEXUS SOCIAL é uma demonstração local, sem fins comerciais, de uma rede de apoio comunitário para organizar solicitações fictícias de alimentos e itens básicos, acompanhar o atendimento e consultar o histórico de cada pedido. Não representa uma operação real. Seu slogan é “A ajuda certa. No momento certo.”
 
 Permite cadastrar e pesquisar pedidos por texto, categoria, status e urgência; acompanhar o ciclo do pedido; consultar indicadores por status e o histórico local de ações; exportar um backup JSON; e carregar exemplos fictícios.
 
@@ -41,6 +41,8 @@ A experiência é web adaptativa para celular, tablet e desktop. Em telas de at�
 - A urgência é declarada pelo solicitante e não comprova necessidade.
 - Os dados são locais e não constituem auditoria; a interface não verifica entregas físicas.
 - A demonstração não deve ser usada para uma operação real de doações.
+- A tela `#/sobre-dados` descreve o armazenamento local, como apagar os dados e os placeholders de autoria/contato.
+- `assets/CREDITOS.md` registra os ativos visuais e fontes; dados de origem e licença não verificados permanecem para preenchimento do autor.
 - É necessário um servidor HTTP simples para executar a aplicação.
 - O destino de publicação continua em aberto. GitHub Pages ou Vercel são sugestões, não decisões confirmadas.
 

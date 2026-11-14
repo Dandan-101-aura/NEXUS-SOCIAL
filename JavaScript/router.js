@@ -1,12 +1,13 @@
 // Roteamento leve por hash. Endereços:
 //   #/inicio   #/painel   #/solicitacoes   #/cadastrar   #/historico
-//   #/solicitacao/<id>   (link direto para os detalhes de uma solicitação)
+//   #/solicitacao/<id>   #/sobre-dados
 const VIEW_PATHS = Object.freeze({
   home: "inicio",
   dashboard: "painel",
   requests: "solicitacoes",
   "new-request": "cadastrar",
   history: "historico",
+  "about-data": "sobre-dados",
 });
 
 const PATH_VIEWS = Object.freeze(

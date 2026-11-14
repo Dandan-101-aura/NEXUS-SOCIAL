@@ -462,16 +462,15 @@ test("mobile navigation, keyboard focus, labels and supported viewport widths wo
         true,
       );
 
-      assert.equal(await page.locator(".menu-toggle").count(), 0);
+      const dock = page.getByRole("navigation", { name: "Navegação rápida" });
+      assert.equal(await dock.isVisible(), true);
+      assert.equal(await dock.locator("a[data-view]").count(), 4);
       assert.equal(
         await page
           .locator("#site-navigation")
           .evaluate((navigation) => navigation.inert),
         true,
       );
-      const dock = page.getByRole("navigation", { name: "Navegação rápida" });
-      assert.equal(await dock.isVisible(), true);
-      assert.equal(await dock.locator("a[data-view]").count(), 4);
 
       assert.equal(
         await page.evaluate(() =>

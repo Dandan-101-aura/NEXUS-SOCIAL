@@ -26,6 +26,7 @@ const CONTENT_TYPES = new Map([
   [".jpg", "image/jpeg"],
   [".jpeg", "image/jpeg"],
   [".webp", "image/webp"],
+  [".woff2", "font/woff2"],
 ]);
 const SYSTEM_BROWSER_PATHS = [
   process.env.NEXUS_BROWSER_PATH,

@@ -26,12 +26,7 @@
       })();
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&display=swap"
-    />
+    <link rel="stylesheet" href="./assets/fonts/fonts.css" />
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./editorial.css" />
     <link rel="stylesheet" href="./public.css" />
@@ -133,7 +128,7 @@
                 </div>
               </dl>
               <p class="public-preview-footnote">
-                Perfis simulados · dados locais e fictícios
+                Conteúdo fictício de demonstração
               </p>
             </div>
             <figcaption>
@@ -186,6 +181,7 @@
       <footer class="public-footer">
         <span>NEXUS SOCIAL · A ajuda certa. No momento certo.</span>
         <span>Projeto demonstrativo · dados fictícios e locais</span>
+        <a href="#/sobre-dados">Sobre os dados</a>
       </footer>
     </div>
 
@@ -329,14 +325,14 @@
               ></div>
               <div class="welcome-overlay" aria-hidden="true"></div>
               <div class="welcome-copy">
-                <span class="welcome-kicker">AÇÃO SOCIAL & SOLIDARIEDADE</span>
+                <span class="welcome-kicker">DEMONSTRAÇÃO LOCAL</span>
                 <h2>
                   A ajuda certa.<br />
                   <em>No momento certo.</em>
                 </h2>
                 <p>
-                  Conectando quem precisa de alimentos e itens essenciais a
-                  voluntários dispostos a fazer a diferença na comunidade.
+                  Explore a interface com pedidos fictícios de alimentos e itens
+                  básicos, sem representar uma operação real.
                 </p>
                 <div class="welcome-actions">
                   <button
@@ -354,8 +350,8 @@
                     type="button"
                     data-navigate="new-request"
                   >
-                    <span class="btn-icon" data-icon="plus-circle"></span> Pedir
-                    ajuda
+                    <span class="btn-icon" data-icon="plus-circle"></span>
+                    Cadastrar pedido de exemplo
                   </button>
                 </div>
               </div>
@@ -363,15 +359,18 @@
               <div class="welcome-tagline-box">
                 <span class="welcome-tag-icon" data-icon="heart"></span>
                 <p>
-                  <strong>Comunidade Ativa</strong><br />Solidariedade direta,
-                  transparente e local
+                  <strong>Conteúdo fictício de demonstração</strong><br />Dados
+                  fictícios neste navegador
                 </p>
               </div>
             </div>
 
             <figure class="pull-quote">
+              <p class="demo-content-label">
+                Conteúdo fictício de demonstração
+              </p>
               <blockquote>Ninguém precisa pedir ajuda sozinho.</blockquote>
-              <figcaption>Princípio da plataforma</figcaption>
+              <figcaption>Frase ilustrativa, não é depoimento</figcaption>
             </figure>
 
             <div class="section-heading">
@@ -413,9 +412,10 @@
               </div>
             </div>
             <p class="dashboard-count-note">
-              Os indicadores mostram a quantidade de solicitações em cada status
-              atual; não representam o total histórico de eventos. Conclusões
-              declaradas e recebimentos confirmados são contados separadamente.
+              Conteúdo fictício de demonstração. Indicadores locais mostram a
+              quantidade de solicitações em cada status atual, não pessoas
+              atendidas nem o total histórico de eventos. Conclusões declaradas
+              e recebimentos confirmados são contados separadamente.
             </p>
 
             <section
@@ -471,14 +471,14 @@
               <div class="section-heading">
                 <div>
                   <p class="eyebrow">COMUNIDADE</p>
-                  <h2 id="community-title">Histórias de impacto</h2>
+                  <h2 id="community-title">Histórias fictícias de exemplo</h2>
                 </div>
               </div>
-              <div class="story-grid" id="community-stories"></div>
               <p class="community-note">
-                Histórias fictícias, escritas para esta demonstração. Nomes e
-                frases não pertencem a pessoas reais.
+                Conteúdo fictício de demonstração. As histórias, citações e
+                personagens abaixo não representam pessoas reais.
               </p>
+              <div class="story-grid" id="community-stories"></div>
             </section>
 
             <section class="data-tools" aria-labelledby="data-tools-title">
@@ -488,7 +488,8 @@
                 <p class="data-tools-text">
                   Exporte uma cópia JSON ou importe solicitações de forma
                   aditiva. A importação não altera nem apaga dados existentes.
-                  Os exemplos também são acrescentados sem substituir registros.
+                  Conteúdo fictício de demonstração. Os exemplos também são
+                  acrescentados sem substituir registros.
                 </p>
               </div>
               <div class="data-tools-actions">
@@ -659,6 +660,10 @@
               <p class="form-intro">
                 Não inclua endereço exato, documentos pessoais ou telefone
                 público. Todos os campos são obrigatórios.
+              </p>
+              <p class="form-demo-warning" role="note">
+                Demonstração: não informe dados pessoais reais. Os dados ficam
+                apenas neste navegador.
               </p>
               <div class="form-grid">
                 <div class="form-field">
@@ -843,6 +848,15 @@
             </div>
             <ol class="history-list" id="history-list"></ol>
           </section>
+
+          <section
+            class="view"
+            id="view-about-data"
+            aria-labelledby="data-privacy-title"
+            hidden
+          >
+            <div id="data-privacy-content"></div>
+          </section>
         </main>
 
         <nav class="mobile-dock" aria-label="Navegação rápida">
@@ -873,6 +887,7 @@
             Projeto demonstrativo. Dados locais não são registros invioláveis
             nem confirmação de atendimento.
           </p>
+          <a href="#/sobre-dados">Sobre os dados</a>
         </footer>
       </div>
     </div>
